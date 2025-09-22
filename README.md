@@ -2,6 +2,7 @@ Výdejní automat na propisky
 Tým: Filip Janda, Pavel Maňásek
 
 Cílem projektu je zhotovit automat na propisky, který bude sloužit studentům, kteří potřebují z jakéhokoliv důvodu propisku. Naše osobní cíle v tomto projektu jsou, že se na projektu naučíme nové věci jako práce s databází a síťová komunikace.
+
 Parametry:
 - skenování QR kódů z telefonu uživatele pomocí kamery
 - řízení pomocí esp32
