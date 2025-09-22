@@ -13,6 +13,20 @@
 </head>
 <body>
     <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="user-info"></div>
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            var userInfo = `
+                <h2>Přihlašovací údaje</h2>
+                <p><strong>ID:</strong> ${profile.getId()}</p>
+                <p><strong>Jméno:</strong> ${profile.getName()}</p>
+                <p><strong>Email:</strong> ${profile.getEmail()}</p>
+                <img src="${profile.getImageUrl()}" alt="Profilová fotka" width="100">
+            `;
+            document.getElementById('user-info').innerHTML = userInfo;
+        }
+    </script>
 </body>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script>
