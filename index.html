@@ -1,12 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Document</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Google Sign-In (GIS) ukázka</title>
+  <meta name="google-signin-client_id" content="1047869218898-7f4v8h7stuu1v3k0u2tvhnm4sujsjgmp.apps.googleusercontent.com">
+  <style>
+    body{font-family:system-ui,Arial;margin:32px}
+    .card{max-width:540px;margin:0 auto}
+    #user-info{margin-top:18px;border-top:1px solid #eee;padding-top:12px}
+    img.profile{width:96px;height:96px;border-radius:50%;object-fit:cover}
+    button{margin-top:8px;padding:8px 12px;border-radius:6px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
+  </style>
 </head>
 <body>
-    
+  <div class="card">
+    <h1>Google Sign-In (GIS)</h1>
+
+    <!-- Google Identity Services script -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Tlačítko se vygeneruje sem -->
+    <div id="g_id_onload"
+         data-client_id="YOUR_CLIENT_ID.apps.googleusercontent.com"
+         data-auto_prompt="false">
+    </div>
+    <div id="buttonDiv"></div>
+
+    <div id="user-info" aria-live="polite"></div>
+  </div>
+
+  <script>
+    // Inicializace tlačítka a callback
+    function handleCredentialResponse(response) {
+      // response.credential je JWT (ID token) — dekódujeme payload pro zobrazení
+      const payload = parseJwt(response.credential);
+      // payload obsahuje například: sub, name, email, picture
+      const html = `
+        <h2>Přihlašovací údaje</h2>
+        <p><strong>ID (sub):</strong> ${esc(payload.sub)}</p>
+        <p><strong>Jméno:</strong> ${esc(payload.name || '—')}</p>
+        <p><strong>Email:</strong> ${esc(payload.email || '—')}</p>
+        ${payload.picture ? `<img class="profile" src="${esc(payload.picture)}" alt="Profilová fotka">` : ''}
+        <div><button id="signout">Odhlásit</button></div>
+      `;
+      document.getElementById('user-info').innerHTML = html;
+
+      document.getElementById('signout').addEventListener('click', () => {
+        // GIS nemaže server-side session automaticky — smažeme UI a zablokujeme credential
+        document.getElementById('user-info').innerHTML = '<p>Uživatel odhlášen.</p>';
+        // zakážeme automatické zobrazení credential pickeru
+        google.accounts.id.disableAutoSelect();
+      });
+      console.log('Payload:', payload);
+    }
+
+    // Vygenerování tlačítka (po načtení knihovny)
+    window.onload = function() {
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: document.querySelector('meta[name="google-signin-client_id"]').content,
+          callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+          document.getElementById('buttonDiv'),
+          { theme: 'outline', size: 'large' }  // volby vzhledu
+        );
+        // pokud chceš automatické vyzvání: google.accounts.id.prompt();
+      } else {
+        document.getElementById('buttonDiv').innerText = 'Nepodařilo se načíst Google knihovnu.';
+      }
+    };
+
+    // JWT payload parser (bez ověřování podpisu — pro zobrazení pouze)
+    function parseJwt (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch(e) {
+        return {};
+      }
+    }
+
+    function esc(s){ if(!s && s !== 0) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  </script>
 </body>
 </html>
+
