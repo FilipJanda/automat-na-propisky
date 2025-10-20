@@ -42,7 +42,7 @@
     const { data, error } = await supabaseClient
     .from('users')                // ⬅ sem název tabulky
     .insert([
-        { gid: String(uid), email: uemail }  // ⬅ sem sloupce a hodnoty
+        { gid: String(googleUser.id), email: uemail }  // ⬅ sem sloupce a hodnoty
     ]);
 
     console.log('data:', data);
