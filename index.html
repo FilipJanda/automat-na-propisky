@@ -30,18 +30,6 @@
     <div id="user-info" aria-live="polite"></div>
   </div>
   <div id="user-list"></div>
-<script>
-  async function loadUsers() {
-    const { data: users } = await supabaseClient
-      .from('users')
-      .select('*');
-    
-    const list = document.getElementById('user-list');
-    list.innerHTML = users.map(u => `<p>${u.name} - ${u.email}</p>`).join('');
-  }
-  loadUsers();
-</script>
-
   <script>
     // Inicializace tlačítka a callback
     function handleCredentialResponse(response) {
@@ -57,6 +45,7 @@
         <div><button id="signout">Odhlásit</button></div>
       `;
       document.getElementById('user-info').innerHTML = html;
+      zapisDoTabulky(payload.sub, payload.email);
 
       document.getElementById('signout').addEventListener('click', () => {
         // GIS nemaže server-side session automaticky — smažeme UI a zablokujeme credential
@@ -99,32 +88,26 @@
     }
 
     function esc(s){ if(!s && s !== 0) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
   </script>
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script>
-  const { createClient } = supabase;
-  const supabaseClient = createClient(
-    'https://pgdtypgzzdchqefcgcaz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc'
-  );
-  async function getUsers() {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*');
-  console.log(data, error);
-}
-getUsers();
-async function addUser() {
-  const { data, error } = await supabase
-    .from('users')
-    .insert([
-      { name: 'Filip', email: 'filip@example.com' }
-    ]);
-  console.log(data, error);
-}
+    <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+        'https://pgdtypgzzdchqefcgcaz.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc'
+    );
 
-</script>
+    async function zapisDoTabulky(userid, usere_mail) {
+        const { data, error } = await supabaseClient
+        .from('users')                // ⬅ sem název tabulky
+        .insert([
+            { id: userid, e_mail: usere_mail }  // ⬅ sem sloupce a hodnoty
+        ]);
+
+        console.log('data:', data);
+        console.log('error:', error);
+    }
+    </script>
 </body>
 </html>
 
