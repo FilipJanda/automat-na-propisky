@@ -18,7 +18,7 @@
         const { data, error } = await supabaseClient
         .from('users')                // ⬅ sem název tabulky
         .insert([
-            { id: '5347829', token_count: '4' }  // ⬅ sem sloupce a hodnoty
+            { id: '45', token_count: '4' }  // ⬅ sem sloupce a hodnoty
         ]);
 
         console.log('data:', data);
