@@ -39,7 +39,6 @@
   );
 
   async function zapisDoTabulky(userid, usere_mail) {
-    console.log(userid, usere_mail);
     const { data, error } = await supabaseClient
     .from('users')                // ⬅ sem název tabulky
     .insert([
