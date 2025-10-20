@@ -65,6 +65,7 @@
         <div><button id="signout">Odhlásit</button></div>
       `;
       document.getElementById('user-info').innerHTML = html;
+      console.log('Uživatel přihlášen.');
       zapisDoTabulky(payload.sub, payload.email);
 
       document.getElementById('signout').addEventListener('click', () => {
