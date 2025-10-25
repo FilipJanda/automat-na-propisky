@@ -31,8 +31,8 @@
   );
 
   async function zapisDoTabulky(userid, usere_mail) {
-      const id = String(payload.sub || userid);
-      const email = String(usere_mail || '');
+      const id = String(esc(payload.sub));
+      const email = String(esc(payload.email);
       try {
         // 1) zkusíme zjistit, jestli uživatel existuje
         const { data: existing, error: selectErr } = await supabaseClient
