@@ -38,15 +38,15 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc'
   );
 
-  async function zapisDoTabulky(uid, uemail) {
-    const { data, error } = await supabaseClient
-    .from('users')                // ⬅ sem název tabulky
-    .insert([
-        { gid: String(googleUser.id), email: uemail }  // ⬅ sem sloupce a hodnoty
-    ]);
+  async function zapisDoTabulky(userid, usere_mail) {
+      const { data, error } = await supabaseClient
+      .from('users')                // ⬅ sem název tabulky
+      .insert([
+          { id: String(userid), e_mail: usere_mail }  // ⬅ sem sloupce a hodnoty
+      ]);
 
-    console.log('data:', data);
-    console.log('error:', error);
+      console.log('data:', data);
+      console.log('error:', error);
   }
   </script>
   <script>
@@ -64,12 +64,7 @@
         <div><button id="signout">Odhlásit</button></div>
       `;
       document.getElementById('user-info').innerHTML = html;
-<<<<<<< HEAD
       zapisDoTabulky(String(payload.sub), payload.email);
-=======
-      console.log('Uživatel přihlášen.');
-      zapisDoTabulky(payload.sub, payload.email);
->>>>>>> ea599d1d0069063a00d5727ddb27a790a2a0fa22
 
       document.getElementById('signout').addEventListener('click', () => {
         // GIS nemaže server-side session automaticky — smažeme UI a zablokujeme credential
