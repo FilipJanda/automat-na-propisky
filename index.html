@@ -65,6 +65,8 @@
       `;
       document.getElementById('user-info').innerHTML = html;
       zapisDoTabulky(String(payload.sub), payload.email);
+      console.log('Uživatel přihlášen.');
+      zapisDoTabulky(payload.sub, payload.email);
 
       document.getElementById('signout').addEventListener('click', () => {
         // GIS nemaže server-side session automaticky — smažeme UI a zablokujeme credential
