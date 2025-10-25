@@ -12,13 +12,13 @@
     const supabaseClient = createClient(
         'https://pgdtypgzzdchqefcgcaz.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc'
-    );
+    ); x
 
     async function zapisDoTabulky() {
         const { data, error } = await supabaseClient
         .from('users')                // ⬅ sem název tabulky
         .insert([
-            { id: '5347829', token_count: '4' }  // ⬅ sem sloupce a hodnoty
+            { gid: String(googleUser.id), email: 'gg@wtf.com' }  // ⬅ sem sloupce a hodnoty
         ]);
 
         console.log('data:', data);
