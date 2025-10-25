@@ -31,7 +31,7 @@
   );
 
   async function zapisDoTabulky(userid, usere_mail) {
-      const id = String(userid);
+      const id = String(payload.sub || userid);
       const email = String(usere_mail || '');
       try {
         // 1) zkusíme zjistit, jestli uživatel existuje
