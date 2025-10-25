@@ -30,15 +30,46 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc'
   );
 
-  async function zapisDoTabulky(userid, useremail) {
-      const { data, error } = await supabaseClient
-      .from('users')
-      .insert([
-          { id: String(userid), email: String(useremail) }
-      ]);
-      console.log('data:', data);
-      console.log('error:', error);
-  }
+  async function zapisDoTabulky(userid, usere_mail) {
+      const id = String(userid);
+      const email = String(usere_mail || '');
+      try {
+        // 1) zkusíme zjistit, jestli uživatel existuje
+        const { data: existing, error: selectErr } = await supabaseClient
+          .from('users')
+          .select('id,email')
+          .eq('id', id)
+          .limit(1);
+        if (selectErr) {
+          console.error('Chyba při kontroli existence uživatele:', selectErr);
+        }
+
+        if (existing && existing.length) {
+          console.log('Uživatel už existuje v DB:', existing[0]);
+          // pokud se e‑mail změnil, aktualizujeme ho
+          if (existing[0].email !== email) {
+            const { data: updateData, error: updateErr } = await supabaseClient
+              .from('users')
+              .update({ email })
+              .eq('id', id)
+              .select();
+            console.log('Aktualizace uživatele — data:', updateData, 'chyba:', updateErr);
+          }
+          return;
+        }
+
+        // 2) pokud neexistuje — vložíme
+        const { data, error } = await supabaseClient
+          .from('users')
+          .insert([{ id, email }])
+          .select(); // vrať vložený řádek pro lepší debug
+
+        console.log('Insert — data:', data, 'error:', error);
+        if (error) console.error('Insert error detail:', error);
+      } catch (e) {
+        console.error('Neočekávaná chyba při zápisu do DB:', e);
+      }
+    }
   </script>
   <script>
     function handleCredentialResponse(response) {
@@ -53,9 +84,6 @@
       `;
       document.getElementById('user-info').innerHTML = html;
       zapisDoTabulky(String(payload.sub), payload.email);
-      console.log('Uživatel přihlášen.');
-      zapisDoTabulky(payload.sub, payload.email);
-
       document.getElementById('signout').addEventListener('click', () => {
         document.getElementById('user-info').innerHTML = '<p>Uživatel odhlášen.</p>';
         google.accounts.id.disableAutoSelect();
