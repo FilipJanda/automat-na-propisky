@@ -5,14 +5,9 @@
 #include <string.h>
 #include <ESP32QRCodeReader.h>
 
-//const char* ssid = "I_hear_you";
-//const char* password = "silver11";
-
 const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
 const int httpsPort = 443;
 const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
-
-const char* userId = "2";
 
 //new credentials
 bool connectWiFi(String ssid, String password)
