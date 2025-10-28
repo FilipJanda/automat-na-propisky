@@ -39,7 +39,7 @@ pre { background:#f6f6f6; padding:1rem; border-radius:8px; }
       setStatus('Otevírám Google přihlášení...');
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: https://hogofogo.netlify.app/ }
+        options: { redirectTo: "https://hogofogo.netlify.app/"}
       });
       if (error) setStatus('Chyba při zahájení OAuth: ' + error.message);
     });
