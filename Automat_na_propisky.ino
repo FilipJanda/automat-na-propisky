@@ -5,13 +5,27 @@
 #include <string.h>
 #include <ESP32QRCodeReader.h>
 
+//indicator pins
+// POWER connected directly to 3v3
+#define WIFI 16
+#define EMPTY 0
+
+#define IR 2
+
+//pins for stepper
+#define STEPPER_A 14
+#define STEPPER_B 15
+#define STEPPER_C 13
+#define STEPPER_D 12
+
+#define STEPPER_DELAY 1500
+
 const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
 const int httpsPort = 443;
 const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
 //new credentials
-bool connectWiFi(String ssid, String password)
-{
+bool connectWiFi(String ssid, String password) {
   WiFi.begin(ssid, password);
   
   int timeout = 60000;
@@ -29,7 +43,7 @@ bool connectWiFi(String ssid, String password)
   }
 
   Preferences preferences;
-  preferences.begin("WiFiCredentials", false); // false = read/write mode
+  preferences.begin("WiFiCredentials", false);
   preferences.putString("ssid", ssid);
   preferences.putString("password", password);
 
@@ -37,13 +51,12 @@ bool connectWiFi(String ssid, String password)
 }
 
 //saved credentials
-bool connectWiFi()
-{
+bool connectWiFi() {
   Preferences preferences;
   preferences.begin("WiFiCredentials", true); 
 
-  char* ssid = preferences.getString("ssid", "");
-  char* password = preferences.getString("password", "");
+  String ssid = preferences.getString("ssid", "");
+  String password = preferences.getString("password", "");
   
   if (ssid == "" && password == "")
   {
@@ -54,7 +67,7 @@ bool connectWiFi()
   
   int timeout = 60000;
 
-  while (WiFi.status() != WL_CONNECTED {
+  while (WiFi.status() != WL_CONNECTED) {
     if (timeout > 0)
     {
       timeout -= 500;
@@ -69,30 +82,20 @@ bool connectWiFi()
   return true;
 }
 
-String readQR()
-{
-
-}
-
-int getUserID(int )
-{
-  
-}
-
-bool deductToken(int userid) {
+bool deductToken(char* uid, char* temporary_key) {
   HTTPClient http;
 
   // Target URL for the "users" table
-  String url = String(host) + "/rest/v1/users?id=eq." + userid;
+  String url = String(host) + "/rest/v1/users?id=eq." + uid;
 
   // Prepare JSON body – e.g. set tokens to 4
   String body = "{\"token_count\":4}";
 
   http.begin(url);
   http.addHeader("apikey", supabaseKey);
-  http.addHeader("Authorization", String("Bearer ") + supabaseKey);
+  //http.addHeader("Authorization", String("Bearer ") + supabaseKey);
   http.addHeader("Content-Type", "application/json");  
-  http.addHeader("Prefer", "return=representation");
+  http.addHeader("Prefer", "count=exact");
   
   int httpResponseCode = http.PATCH(body);
 
@@ -108,19 +111,79 @@ bool deductToken(int userid) {
   }
 }
 
+char* scanQR()
+{
+  ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
+  struct QRCodeData qrCodeData;
+
+  reader.setup();
+  reader.begin();
+
+  while (true) 
+  {
+    if (reader.receiveQrCode(&qrCodeData, 100) && qrCodeData.valid) 
+    {
+      char* payload = (char*)qrCodeData.payload;
+      return payload;
+    }
+    
+    delay(100);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
 
   if (connectWiFi())
   {
-    Serial.println("WiFi connected")
+    //Credentials are stored
+    Serial.println("WiFi connected");
   }
   else
   {
-    Serial.println("No saved/incorrect WiFi credentials")
+    //Credentials missing or incorrect, acquire now
+    Serial.println("Scanning for WiFi credentials...");    
+    char* credentials = scanQR();
+    char* pch = strtok(credentials, "/");
+    char* ssid;
+    char* password;
+
+    if (pch != NULL)
+    {
+      ssid = pch;
+      pch = strtok(NULL, "/");
+      Serial.println("SSID acquired");
+    }
+    else 
+    {
+      Serial.println("Invalid QR data");
+    }
+
+    if (pch != NULL)
+    {
+      password = pch;
+      Serial.println("Password acquired");
+    }
+    else 
+    {
+      Serial.println("Invalid QR data");
+    }
+
+    if (connectWiFi(ssid, password))
+    {
+      Serial.println("WiFi connected");
+    }
+    else
+    {
+      Serial.println("WiFi failed");
+      while (true)
+      {
+        delay(1000);
+      }
+    }
   }
 }
 
 void loop() {
-  //read qr
+
 }
