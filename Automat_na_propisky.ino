@@ -250,24 +250,23 @@ void loop()
   if (pch != NULL)
   {
     if (deductToken(pch, strtok(NULL, "/")))
-{
-  bool sensorDetected = false;
+    {
+      bool sensorDetected = false;
   
-  while (!sensorDetected)
-  {
-    stepperRotate();
-    //read data from sensor
+      while (!sensorDetected)
+      {
+        stepperRotate();
+        //read data from sensor
+      }
+    }
+    else
+    {
+      Serial.println("Failed to read user QR");
+    }
   }
-}
+
 else
 {
   //should return false if no tokens left
   Serial.println("HTTP error")
-}
-}
-
-else
-
-Serial.println("Failed to read user QR");
-
 }
