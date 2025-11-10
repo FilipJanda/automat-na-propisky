@@ -268,5 +268,5 @@ void loop()
 else
 {
   //should return false if no tokens left
-  Serial.println("HTTP error")
+  Serial.println("HTTP error");
 }
