@@ -24,6 +24,65 @@ const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
 const int httpsPort = 443;
 const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
+void stepperRotate()
+{
+//krok 1
+digitalWrite(STEPPER_A, HIGH); 
+digitalWrite(STEPPER_B, LOW); 
+digitalWrite(STEPPER_C, LOW); 
+digitalWrite(STEPPER_D, LOW); 
+delay(rychlost);
+
+//krok 2
+digitalWrite(STEPPER_A, HIGH); 
+digitalWrite(STEPPER_B, HIGH); 
+digitalWrite(STEPPER_C, LOW); 
+digitalWrite(STEPPER_D, LOW); 
+delay(rychlost);
+
+//krok 3
+digitalWrite(STEPPER_A, LOW); 
+digitalWrite(STEPPER_B, HIGH); 
+digitalWrite(STEPPER_C, LOW); 
+digitalWrite(STEPPER_D, LOW); 
+delay(rychlost);
+
+//krok 4
+digitalWrite(STEPPER_A, LOW); 
+digitalWrite(STEPPER_B, HIGH); 
+digitalWrite(STEPPER_C, HIGH); 
+digitalWrite(STEPPER_D, LOW); 
+delay(rychlost);
+
+//krok 5
+digitalWrite(STEPPER_A, LOW); 
+digitalWrite(STEPPER_B, LOW);
+digitalWrite(STEPPER_C, HIGH); 
+digitalWrite(STEPPER_D, LOW); 
+delay(rychlost);
+
+//krok 6
+digitalWrite(STEPPER_A, LOW); 
+digitalWrite(STEPPER_B, LOW);
+digitalWrite(STEPPER_C, HIGH);
+digitalWrite(STEPPER_D, HIGH); 
+delay(rychlost);
+
+//krok 7
+digitalWrite(STEPPER_A, LOW); 
+digitalWrite(STEPPER_B, LOW); 
+digitalWrite(STEPPER_C, LOW); 
+digitalWrite(STEPPER_D, HIGH); 
+delay(rychlost);
+
+//krok 8
+digitalWrite(STEPPER_A, HIGH); 
+digitalWrite(STEPPER_B, LOW); 
+digitalWrite(STEPPER_C, LOW); 
+digitalWrite(STEPPER_D, HIGH); 
+delay(rychlost);
+}
+
 //new credentials
 bool connectWiFi(String ssid, String password) {
   WiFi.begin(ssid, password);
@@ -184,6 +243,31 @@ void setup() {
   }
 }
 
-void loop() {
+void loop()
+{
+  char* pch = strtok(scanQR(), "/");
+  
+  if (pch != NULL)
+  {
+    if (deductToken(pch, strtok(NULL, "/")))
+{
+  bool sensorDetected = false;
+  
+  while (!sensorDetected)
+  {
+    stepperRotate();
+    //read data from sensor
+  }
+}
+else
+{
+  //should return false if no tokens left
+  Serial.println("HTTP error")
+}
+}
+
+else
+
+Serial.println("Failed to read user QR");
 
 }
