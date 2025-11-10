@@ -1,95 +1,65 @@
 <!doctype html>
 <html lang="cs">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Supabase Google Sign-In (example)</title>
-<style>
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 2rem; }
-button { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-.info { margin-top: 1rem; }
-pre { background:#f6f6f6; padding:1rem; border-radius:8px; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kup si svou propisku – přihlášení</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="pics/pen.png">
+ 
 </head>
 <body>
-  <h1>Supabase Google Sign-In — jednoduchý příklad</h1>
-  <p>Tlačítko se přihlásí přes Google. Pokud neexistuje záznam v tabulce <code>users</code> (sloupce <code>email</code> a <code>gid</code>), automaticky se vytvoří.</p>
-
-  <button id="btn-google">Přihlásit se pomocí Google</button>
-
-  <div class="info" id="status">Status: čekám na akci uživatele...</div>
+  <h1>S námi budete vždy připraveni na nečekané testy</h1>
+  <p>Nová propiska se může hodit vždy, ať už se Vám Vaše rozbila, přestala psát nebo jste ji někde ztratily. Ale nezoufejte.<br>Právě proto jsme tady.</p>
+  <button id="btn-google">Jdu si pro mou propisku</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script>
-    // === NASTAVTE TADY ===
-    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co"; // <- nahraďte
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc"; // <- nahraďte
-    // =====================
+    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
-    const { createClient } = supabase; // UMD export
+    const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const statusEl = document.getElementById('status');
     const btn = document.getElementById('btn-google');
 
-    function setStatus(html){ statusEl.innerHTML = `Status: ${html}`; }
+    function logStatus(msg) {
+      console.log(`[AUTH STATUS] ${msg}`);
+    }
 
-    // --- klik na tlačítko - zahájit OAuth flow ---
     btn.addEventListener('click', async () => {
-      setStatus('Otevírám Google přihlášení...');
+      logStatus('Otevírám Google přihlášení...');
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: "https://hogofogo.netlify.app/"}
+        options: { redirectTo: "https://hogofogo.netlify.app/" }
       });
-      if (error) setStatus('Chyba při zahájení OAuth: ' + error.message);
+      if (error) logStatus('Chyba při zahájení OAuth: ' + error.message);
     });
 
-    // --- zkontrolujeme, jestli už je uživatel přihlášen ---
-    // spustíme na načtení i po redirectu
     window.addEventListener('load', checkAndSyncUser);
 
-    // Hlavní funkce: ověří existenci v tabulce `users` a případně vloží nový záznam
-    async function checkAndSyncUser(){
-      setStatus('Kontroluji session...');
-
-      // doporučený způsob: getUser() (provede síťový request)
+    async function checkAndSyncUser() {
+      logStatus('Kontroluji session...');
       const { data: userData, error: getUserError } = await supabaseClient.auth.getUser();
-      if (getUserError) {
-        setStatus('Chyba při získání uživatele: ' + getUserError.message);
-        return;
-      }
+      if (getUserError) return logStatus('Chyba při získání uživatele: ' + getUserError.message);
 
       const user = userData?.user;
-      if (!user) {
-        setStatus('Není přihlášen žádný uživatel.');
-        return;
-      }
+      if (!user) return logStatus('Není přihlášen žádný uživatel.');
 
-      setStatus('Přihlášen: ' + (user.email || user.id) + ' — zjišťuji identity...');
+      logStatus('Přihlášen: ' + (user.email || user.id));
 
-      // získat linked identities — obsahuje provider_id (to je Google ID) a provider
       const { data: identitiesData, error: idErr } = await supabaseClient.auth.getUserIdentities();
-      if (idErr) {
-        setStatus('Chyba při získání identities: ' + idErr.message);
-        return;
-      }
+      if (idErr) return logStatus('Chyba při získání identities: ' + idErr.message);
 
-      const identities = identitiesData?.data || [];
-      // najdeme identity s provider === 'google'
-      const googleIdentity = identities.find(i => i.provider === 'google');
-      if (!googleIdentity) {
-        // uživatel je přihlášen, ale ne Google (může být email/password) — upravte podle potřeby
-        setStatus('Uživatel není přihlášen přes Google (provider != google). Email: ' + (user.email || 'n/a'));
-        return;
-      }
+      const googleIdentity = identitiesData?.data?.find(i => i.provider === 'google');
+      if (!googleIdentity) return logStatus('Uživatel není přihlášen přes Google.');
 
-      // provider_id je ID od Google (to chceme uložit do sloupce `gid`)
       const providerId = googleIdentity.provider_id;
       const email = googleIdentity.email || user.email;
 
-      setStatus('Google ID: ' + providerId + ' — kontrola v tabulce users...');
-
-      // 1) zkontrolujeme, jestli už máme uživatele v tabulce 'users' podle gid (nebo emailu)
+      logStatus('Kontrola uživatele v tabulce users...');
       const { data: existing, error: selectErr } = await supabaseClient
         .from('users')
         .select('id, email, gid')
@@ -97,19 +67,10 @@ pre { background:#f6f6f6; padding:1rem; border-radius:8px; }
         .limit(1)
         .maybeSingle();
 
-      if (selectErr) {
-        setStatus('Chyba při dotazu do tabulky users: ' + selectErr.message);
-        return;
-      }
+      if (selectErr) return logStatus('Chyba při dotazu do tabulky users: ' + selectErr.message);
+      if (existing) return logStatus(`Uživatel nalezen (id=${existing.id}).`);
 
-      if (existing) {
-        setStatus('Uživatel nalezen v users (id=' + existing.id + '). Přihlášení dokončeno.');
-        // tady můžete přesměrovat na zamýšlenou stránku
-        return;
-      }
-
-      // 2) pokud neexistuje, vložíme nový záznam
-      setStatus('Uživatel nenalezen — vytvářím záznam v users...');
+      logStatus('Vytvářím nový záznam...');
       const insertPayload = { email: email, gid: providerId };
       const { data: inserted, error: insertErr } = await supabaseClient
         .from('users')
@@ -117,27 +78,16 @@ pre { background:#f6f6f6; padding:1rem; border-radius:8px; }
         .select()
         .single();
 
-      if (insertErr) {
-        setStatus('Chyba při vytváření uživatele v users: ' + insertErr.message + '. Zkontrolujte RLS/povolení.');
-        return;
-      }
+      if (insertErr) return logStatus('Chyba při vytváření uživatele: ' + insertErr.message);
 
-      setStatus('Nový uživatel vytvořen (users.id=' + inserted.id + '). Přihlášení dokončeno.');
-      // ...a dál co potřebujete (redirect, zobrazení uživatele apod.)
+      logStatus('Nový uživatel vytvořen (id=' + inserted.id + ').');
     }
 
-    // Volitelně nasloucháme změnám stavu autentizace (užitečné pro SPA flow bez redirectu)
     supabaseClient.auth.onAuthStateChange((event, session) => {
-      console.log('auth state change', event, session);
-      if (event === 'SIGNED_IN') {
-        // po sign-inu zkusíme synchronizovat tabulku
-        checkAndSyncUser();
-      }
-      if (event === 'SIGNED_OUT') {
-        setStatus('Uživatel odhlášen.');
-      }
+      console.log('Auth state change:', event);
+      if (event === 'SIGNED_IN') checkAndSyncUser();
+      if (event === 'SIGNED_OUT') logStatus('Uživatel odhlášen.');
     });
-
   </script>
 </body>
 </html>
