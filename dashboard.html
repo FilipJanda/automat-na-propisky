@@ -90,7 +90,7 @@
     const emailEl = document.getElementById("email");
     const tokensEl = document.getElementById("tokens");
 
-    // === GENEROVÁNÍ TEMPORARY KEY ===
+    // === Funkce pro generování temporary_key ===
     function generateTempKey(length = 48) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+=";
         let out = "";
@@ -104,29 +104,28 @@
         const { data: userData } = await supabaseClient.auth.getUser();
 
         if (!userData.user) {
-            window.location.href = "index.html";
+            window.location.href = "index.html"; // není přihlášen → zpět
             return;
         }
 
         const email = userData.user.email;
         emailEl.textContent = email;
 
-        // Temporary key pro tento login
         const newKey = generateTempKey();
 
-        // === najít uživatele v DB ===
+        // === Najít uživatele v tabulce users ===
         const { data: existing, error } = await supabaseClient
             .from("users")
-            .select("id, tokens")
+            .select("id, token_count")
             .eq("email", email)
             .maybeSingle();
 
         if (error) {
-            console.log("DB Error:", error.message);
+            console.log("DB ERROR:", error.message);
             return;
         }
 
-        // === Pokud uživatel existuje → updatuj temporary_key ===
+        // === Pokud existuje → aktualizací temporary_key ===
         if (existing) {
             const { error: updateErr } = await supabaseClient
                 .from("users")
@@ -134,38 +133,39 @@
                 .eq("email", email);
 
             if (updateErr) {
-                console.log("Chyba update temporary_key:", updateErr.message);
+                console.log("ERROR updating key:", updateErr.message);
                 return;
             }
 
-            // zobraz tokeny
-            tokensEl.textContent = existing.tokens + " tokenů";
+            tokensEl.textContent = existing.token_count + " tokenů";
+
             console.log("temporary_key updated:", newKey);
             return;
         }
 
-        // === Pokud neexistuje → vytvořit uživatele + temporary_key ===
+        // === Pokud neexistuje → vytvořit nového uživatele ===
         const { data: inserted, error: insertErr } = await supabaseClient
             .from("users")
             .insert([{ 
-                email: email, 
-                tokens: 0,
+                email: email,
+                token_count: 0,
                 temporary_key: newKey
             }])
             .select()
             .single();
 
         if (insertErr) {
-            console.log("Chyba insertu:", insertErr.message);
+            console.log("INSERT ERROR:", insertErr.message);
             return;
         }
 
-        tokensEl.textContent = inserted.tokens + " tokenů";
+        tokensEl.textContent = inserted.token_count + " tokenů";
         console.log("temporary_key created:", newKey);
     }
 
     loadUser();
 </script>
+
 
 
 </body>
