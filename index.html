@@ -25,69 +25,14 @@
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const btn = document.getElementById('btn-google');
 
-    function logStatus(msg) {
-      console.log(`[AUTH STATUS] ${msg}`);
-    }
-
     btn.addEventListener('click', async () => {
-      logStatus('Otevírám Google přihlášení...');
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: "https://hogofogo.netlify.app/" }
+        options: { redirectTo: "https://hogofogo.netlify.app/dashboard.html" }
       });
-      if (error) logStatus('Chyba při zahájení OAuth: ' + error.message);
+      if (error) console.log('Chyba:', error.message);
     });
+</script>
 
-    window.addEventListener('load', checkAndSyncUser);
-
-    async function checkAndSyncUser() {
-      logStatus('Kontroluji session...');
-      const { data: userData, error: getUserError } = await supabaseClient.auth.getUser();
-      if (getUserError) return logStatus('Chyba při získání uživatele: ' + getUserError.message);
-
-      const user = userData?.user;
-      if (!user) return logStatus('Není přihlášen žádný uživatel.');
-
-      logStatus('Přihlášen: ' + (user.email || user.id));
-
-      const { data: identitiesData, error: idErr } = await supabaseClient.auth.getUserIdentities();
-      if (idErr) return logStatus('Chyba při získání identities: ' + idErr.message);
-
-      const googleIdentity = identitiesData?.data?.find(i => i.provider === 'google');
-      if (!googleIdentity) return logStatus('Uživatel není přihlášen přes Google.');
-
-      const providerId = googleIdentity.provider_id;
-      const email = googleIdentity.email || user.email;
-
-      logStatus('Kontrola uživatele v tabulce users...');
-      const { data: existing, error: selectErr } = await supabaseClient
-        .from('users')
-        .select('id, email, gid')
-        .or(`gid.eq.${providerId},email.eq.${email}`)
-        .limit(1)
-        .maybeSingle();
-
-      if (selectErr) return logStatus('Chyba při dotazu do tabulky users: ' + selectErr.message);
-      if (existing) return logStatus(`Uživatel nalezen (id=${existing.id}).`);
-
-      logStatus('Vytvářím nový záznam...');
-      const insertPayload = { email: email, gid: providerId };
-      const { data: inserted, error: insertErr } = await supabaseClient
-        .from('users')
-        .insert([insertPayload])
-        .select()
-        .single();
-
-      if (insertErr) return logStatus('Chyba při vytváření uživatele: ' + insertErr.message);
-
-      logStatus('Nový uživatel vytvořen (id=' + inserted.id + ').');
-    }
-
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event);
-      if (event === 'SIGNED_IN') checkAndSyncUser();
-      if (event === 'SIGNED_OUT') logStatus('Uživatel odhlášen.');
-    });
-  </script>
 </body>
 </html>

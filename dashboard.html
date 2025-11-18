@@ -1,15 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tokeny a propiska</title>
-    <link rel="icon" type="image/png" href="pics/pen.png">
-</head>
-<body>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard – Propisky</title>
 
-  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 420px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    p {
+      margin: 8px 0;
+      color: #475569;
+      font-size: 1.1rem;
+    }
+
+    .token_count {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      color: #2563eb;
+    }
+
+    button {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #dc2626;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Vítej zpět 👋</h2>
+    <p id="email">Načítám uživatele…</p>
+    <div class="token_count" id="token_count">– tokenů</div>
+    <button id="logout">Odhlásit se</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <script>
+    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const emailEl = document.getElementById("email");
+    const token_countEl = document.getElementById("token_count");
+
+    async function loadUser() {
+        const { data: userData } = await supabaseClient.auth.getUser();
+
+        if (!userData.user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        const email = userData.user.email;
+        emailEl.textContent = email;
+
+        // --- Check user in DB ---
+        const { data: existing, error } = await supabaseClient
+            .from("users")
+            .select("token_count")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (error) {
+            console.log("Chyba DB:", error.message);
+            return;
+        }
+
+        if (!existing) {
+            // create new user row
+            const { data: inserted, error: insErr } = await supabaseClient
+                .from("users")
+                .insert([{ email: email, token_count: 0 }])
+                .select()
+                .single();
+
+            if (insErr) {
+                console.log("Chyba insertu:", insErr.message);
+                return;
+            }
+
+            token_countEl.textContent = inserted.token_count + " tokenů";
+        } else {
+            token_countEl.textContent = existing.token_count + " tokenů";
+        }
+    }
+
+    loadUser();
+</script>
+
 </body>
 </html>
-
-
