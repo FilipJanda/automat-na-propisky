@@ -80,7 +80,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-  <script>
+<script>
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
@@ -88,7 +88,17 @@
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const emailEl = document.getElementById("email");
-    const token_countEl = document.getElementById("token_count");
+    const tokensEl = document.getElementById("tokens");
+
+    // === GENEROVÁNÍ TEMPORARY KEY ===
+    function generateTempKey(length = 48) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+=";
+        let out = "";
+        for (let i = 0; i < length; i++) {
+            out += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return out;
+    }
 
     async function loadUser() {
         const { data: userData } = await supabaseClient.auth.getUser();
@@ -101,39 +111,62 @@
         const email = userData.user.email;
         emailEl.textContent = email;
 
-        // --- Check user in DB ---
+        // Temporary key pro tento login
+        const newKey = generateTempKey();
+
+        // === najít uživatele v DB ===
         const { data: existing, error } = await supabaseClient
             .from("users")
-            .select("token_count")
+            .select("id, tokens")
             .eq("email", email)
             .maybeSingle();
 
         if (error) {
-            console.log("Chyba DB:", error.message);
+            console.log("DB Error:", error.message);
             return;
         }
 
-        if (!existing) {
-            // create new user row
-            const { data: inserted, error: insErr } = await supabaseClient
+        // === Pokud uživatel existuje → updatuj temporary_key ===
+        if (existing) {
+            const { error: updateErr } = await supabaseClient
                 .from("users")
-                .insert([{ email: email, token_count: 0 }])
-                .select()
-                .single();
+                .update({ temporary_key: newKey })
+                .eq("email", email);
 
-            if (insErr) {
-                console.log("Chyba insertu:", insErr.message);
+            if (updateErr) {
+                console.log("Chyba update temporary_key:", updateErr.message);
                 return;
             }
 
-            token_countEl.textContent = inserted.token_count + " tokenů";
-        } else {
-            token_countEl.textContent = existing.token_count + " tokenů";
+            // zobraz tokeny
+            tokensEl.textContent = existing.tokens + " tokenů";
+            console.log("temporary_key updated:", newKey);
+            return;
         }
+
+        // === Pokud neexistuje → vytvořit uživatele + temporary_key ===
+        const { data: inserted, error: insertErr } = await supabaseClient
+            .from("users")
+            .insert([{ 
+                email: email, 
+                tokens: 0,
+                temporary_key: newKey
+            }])
+            .select()
+            .single();
+
+        if (insertErr) {
+            console.log("Chyba insertu:", insertErr.message);
+            return;
+        }
+
+        tokensEl.textContent = inserted.tokens + " tokenů";
+        console.log("temporary_key created:", newKey);
     }
 
     loadUser();
 </script>
+
 
 </body>
 </html>
