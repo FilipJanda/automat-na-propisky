@@ -88,7 +88,7 @@
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const emailEl = document.getElementById("email");
-    const tokensEl = document.getElementById("tokens");
+    const token_countEl = document.getElementById("token_count");
 
     // === Funkce pro generování temporary_key ===
     function generateTempKey(length = 48) {
@@ -137,7 +137,7 @@
                 return;
             }
 
-            tokensEl.textContent = existing.token_count + " tokenů";
+            token_countEl.textContent = existing.token_count + " tokenů";
 
             console.log("temporary_key updated:", newKey);
             return;
@@ -159,7 +159,7 @@
             return;
         }
 
-        tokensEl.textContent = inserted.token_count + " tokenů";
+        token_countEl.textContent = inserted.token_count + " tokenů";
         console.log("temporary_key created:", newKey);
     }
 
