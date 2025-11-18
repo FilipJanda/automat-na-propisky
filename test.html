@@ -103,7 +103,7 @@
       // 1) zkontrolujeme, jestli už máme uživatele v tabulce 'users' podle gid (nebo emailu)
       const { data: existing, error: selectErr } = await supabaseClient
         .from('users')
-        .select('id, email, gid')
+        .select('id, email')
         .or(`gid.eq.${providerId},email.eq.${email}`)
         .limit(1)
         .maybeSingle();
