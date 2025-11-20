@@ -251,9 +251,9 @@ void loop() {
 
   if (pch != NULL)
   {
-    ssid = pch;
+    uid = pch;
     pch = strtok(NULL, "/");
-    Serial.println("SSID acquired");
+    Serial.println("UID acquired");
   }
   else 
   {
@@ -262,15 +262,13 @@ void loop() {
 
   if (pch != NULL)
   {
-    password = pch;
-    Serial.println("Password acquired");
+    tempKey = pch;
+    Serial.println("Temporary key acquired");
   }
   else 
   {
     Serial.println("Invalid QR data");
   }
-
-  // TODO: parse data 
 
   if(deductToken(uid, tempKey))
   {
