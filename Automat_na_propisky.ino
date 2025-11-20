@@ -6,7 +6,7 @@
 #include <ESP32QRCodeReader.h>
 
 //indicator pins
-// POWER connected directly to 3v3
+#define POWER 4
 #define WIFI 16
 #define EMPTY 0
 
@@ -82,11 +82,70 @@ bool connectWiFi() {
   return true;
 }
 
+void stepperRotate()
+{
+  //krok 1
+  digitalWrite(STEPPER_A, HIGH); 
+  digitalWrite(STEPPER_B, LOW); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, LOW); 
+  delay(rychlost);
+
+  //krok 2
+  digitalWrite(STEPPER_A, HIGH); 
+  digitalWrite(STEPPER_B, HIGH); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, LOW); 
+  delay(rychlost);
+
+  //krok 3
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, HIGH); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, LOW); 
+  delay(rychlost);
+
+  //krok 4
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, HIGH); 
+  digitalWrite(STEPPER_C, HIGH); 
+  digitalWrite(STEPPER_D, LOW); 
+  delay(rychlost);
+
+  //krok 5
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, HIGH); 
+  digitalWrite(STEPPER_D, LOW); 
+  delay(rychlost);
+
+  //krok 6
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, HIGH);
+  digitalWrite(STEPPER_D, HIGH); 
+  delay(rychlost);
+
+  //krok 7
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, LOW); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, HIGH); 
+  delay(rychlost);
+
+  //krok 8
+  digitalWrite(STEPPER_A, HIGH); 
+  digitalWrite(STEPPER_B, LOW); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, HIGH); 
+  delay(rychlost);
+}
+
 bool deductToken(char* uid, char* temporary_key) {
   HTTPClient http;
 
   // Target URL for the "users" table
-  String url = String(host) + "/rest/v1/users?id=eq." + uid;
+  String url = "https://pgdtypgzzdchqefcgcaz.supabase.co/rest/v1/rpc/subtract_token" + uid;
 
   // Prepare JSON body – e.g. set tokens to 4
   String body = "{\"token_count\":4}";
@@ -185,5 +244,48 @@ void setup() {
 }
 
 void loop() {
+  char* data = scanQR();
+  char* pch = strtok(data, "/");
+  int uid;
+  char* tempKey;
 
+  if (pch != NULL)
+  {
+    ssid = pch;
+    pch = strtok(NULL, "/");
+    Serial.println("SSID acquired");
+  }
+  else 
+  {
+    Serial.println("Invalid QR data");
+  }
+
+  if (pch != NULL)
+  {
+    password = pch;
+    Serial.println("Password acquired");
+  }
+  else 
+  {
+    Serial.println("Invalid QR data");
+  }
+
+  // TODO: parse data 
+
+  if(deductToken(uid, tempKey))
+  {
+    Serial.println("Dispensing now...")
+
+    bool dispensed = false;
+    while (!dispensed)
+    {
+      stepperRotate();
+      // continuous sensing
+      // if sensor triggers, dispensed = true;
+    }
+  }
+  else
+  {
+    //indicate problems
+  }
 }
