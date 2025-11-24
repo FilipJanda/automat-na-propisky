@@ -171,9 +171,7 @@
         qrContainer.innerHTML = ""; // reset
 
         // Data, která se zakódují do QR
-        const qrData = JSON.stringify({
-            id: currentUserRow.id,
-            temporary_key: currentUserRow.temporary_key
+        const qrData = currentUserRow.id + "/" + currentUserRow.temporary_key
         });
 
         // Vygenerování QR
