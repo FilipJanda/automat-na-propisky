@@ -149,7 +149,6 @@
             .from("users")
             .insert([{ 
                 email: email, 
-                token_count: 0,
                 temporary_key: newKey
             }])
             .select()

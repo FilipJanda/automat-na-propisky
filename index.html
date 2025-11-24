@@ -13,8 +13,8 @@
 </head>
 <body>
   <h1>S námi budete vždy připraveni na nečekané psaní</h1>
-  <p>Nová propiska se může hodit vždy, ať už se Vám Vaše rozbila, přestala psát nebo jste ji někde ztratily. Ale nezoufejte.<br>Právě proto jsme tady.</p>
-  <button id="btn-google">Jdu si pro mou propisku</button>
+  <p>Nová propiska se může hodit vždy, ať už se Vám Vaše rozbila, přestala psát nebo jste ji někde ztratili. Ale nezoufejte.<br>Právě proto jsme tady.</p>
+  <button id="btn-google">Jdu si pro svou propisku</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script>
@@ -28,7 +28,7 @@
     btn.addEventListener('click', async () => {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: "https://hogofogo.netlify.app/dashboard.html" }
+        options: { redirectTo: "https://propiskomat.netlify.app/dashboard.html" }
       });
       if (error) console.log('Chyba:', error.message);
     });
