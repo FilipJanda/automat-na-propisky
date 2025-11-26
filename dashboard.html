@@ -172,7 +172,7 @@
 
         // Data, která se zakódují do QR
         const qrData = currentUserRow.id + "/" + currentUserRow.temporary_key
-        });
+        
 
         // Vygenerování QR
         QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
