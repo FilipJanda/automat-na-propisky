@@ -1,3 +1,6 @@
+https://supabase.com/dashboard/project/pgdtypgzzdchqefcgcaz
+https://propiskomat.netlify.app/
+
 Výdejní automat na propisky
 Tým: Filip Janda, Pavel Maňásek
 
