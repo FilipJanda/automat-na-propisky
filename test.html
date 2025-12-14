@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="cs">
 <head>
@@ -8,31 +10,77 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styledashboard.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: "Inter", sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 420px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    p {
+      margin: 8px 0;
+      color: #475569;
+      font-size: 1.1rem;
+    }
+
+    .token_count {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      color: #2563eb;
+    }
+
+    button {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #dc2626;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 
 <body>
-   <div class="dashboard">
-
-    <!-- HEADER -->
-    <header class="top-bar">
-      <div class="tokens" id="token_count">– tokenů</div>
-      <div class="user" id="email">Načítám…</div>
-      <button class="buy-btn">Koupit tokeny</button>
-    </header>
-
-    <!-- MAIN -->
-    <main class="main-content">
-      <button id="generate-qr" class="qr-btn">Generovat QR kód</button>
-      <div id="qr-container" class="qr-box"></div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="bottom-bar">
-      <button class="continue-btn">
-        Pokračovat
-        <!-- TODO: doplníš kam -->
-      </button>
-    </footer>
+  <div class="card">
+    <h2>Vítej zpět </h2>
+    <p id="email">Načítám uživatele…</p>
+    <div class="token_count" id="token_count">– tokenů</div>
+    <button id="logout">Odhlásit se</button>
+    <button id="generate-qr">Vygenerovat QR kód</button>
+    <div id="qr-container" style="margin-top:20px;"></div>
 
   </div>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -48,7 +96,6 @@
     const token_countEl = document.getElementById("token_count");
     const btnQR = document.getElementById("generate-qr");
     const qrContainer = document.getElementById("qr-container");
-
 
     // === Funkce na generování temp key ===
     function generateTempKey(length = 48) {
