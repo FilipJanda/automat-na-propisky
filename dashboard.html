@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard – Propisky</title>
-
+  <link rel="icon" type="image/png" href="pics/pen.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
@@ -73,7 +73,7 @@
 
 <body>
   <div class="card">
-    <h2>Vítej zpět 👋</h2>
+    <h2>Vítej zpět </h2>
     <p id="email">Načítám uživatele…</p>
     <div class="token_count" id="token_count">– tokenů</div>
     <button id="logout">Odhlásit se</button>
@@ -159,30 +159,44 @@
     }
 
     loadUser();
+    let qrTimeout = null;
 
     // === Generování QR kódu ===
     btnQR.addEventListener("click", async () => {
 
-        if (!currentUserRow) {
-            console.error("Uživatel ještě není načten!");
+    if (!currentUserRow) {
+        console.error("Uživatel ještě není načten!");
+        return;
+    }
+
+    // Zrušíme případný starý timeout
+    if (qrTimeout) {
+        clearTimeout(qrTimeout);
+        qrTimeout = null;
+    }
+
+    qrContainer.innerHTML = ""; // reset starého QR
+
+    // Formát: id/temporary_key
+    const qrData = currentUserRow.id + "/" + currentUserRow.temporary_key;
+
+    // Vygenerování QR
+    QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+        if (err) {
+            console.error("Chyba QR:", err);
             return;
         }
 
-        qrContainer.innerHTML = ""; // reset
+        qrContainer.appendChild(canvas);
 
-        // Data, která se zakódují do QR
-        const qrData = currentUserRow.id + "/" + currentUserRow.temporary_key
-        
-
-        // Vygenerování QR
-        QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
-            if (err) {
-                console.error("Chyba QR:", err);
-                return;
-            }
-            qrContainer.appendChild(canvas);
-        });
+        // ⏱️ QR zmizí po 30 sekundách
+        qrTimeout = setTimeout(() => {
+            qrContainer.innerHTML = "";
+            qrTimeout = null;
+        }, 30000);
     });
+});
+
 </script>
 
 
