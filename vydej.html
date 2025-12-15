@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulátor automatu</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      text-align: center;
+      color: #2563eb;
+    }
+
+    input {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5f5;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .log {
+      min-height: 80px;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .ok { color: #16a34a; }
+    .err { color: #dc2626; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Simulátor automatu</h1>
+
+    <input id="qrInput" placeholder="Zadej QR (id/temporary_key)" />
+
+    <button id="simulate">Ověřit & vydat propisku</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+        /*********************
+     * SUPABASE NASTAVENÍ
+     *********************/
+    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInV0ZWQiOiJwZ2R0eXBnenpkY2hxZWZjZ2NheiIsInJvbGUiOiJhb24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+    const log = document.getElementById("log");
+
+    function write(msg, type) {
+      log.innerHTML = `<span class="${type}">${msg}</span>`;
+    }
+
+    /*********************
+     * SIMULACE AUTOMATU
+     *********************/
+    document.getElementById("simulate").addEventListener("click", async () => {
+      const raw = document.getElementById("qrInput").value.trim();
+
+      if (!raw || !raw.includes("/")) {
+        write("Neplatný QR formát.", "err");
+        return;
+      }
+
+      const [id, key] = raw.split("/");
+
+      // Zavoláme serverovou funkci (RPC)
+      const { data, error } = await supabaseClient.rpc("validate_qr_and_dispense", {
+        p_user_id: id,
+        p_temporary_key: key
+      });
+
+      if (error) {
+        write(error.message.includes("Not enough")
+          ? "Nedostatek tokenů – propiska NEVYDÁNA."
+          : "Neplatný nebo expirovaný QR kód.", "err");
+        return;
+      }
+
+      write("Propiska vydána ✔ (zbývá tokenů: " + data.remaining_tokens + ")", "ok");
+    });
+  </script>
+
+</body>
+</html>
