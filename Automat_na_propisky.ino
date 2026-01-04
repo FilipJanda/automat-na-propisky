@@ -6,18 +6,20 @@
 #include <ESP32QRCodeReader.h>
 
 //indicator pins
+// 1 seems to be unusable
 #define POWER 1
 #define WIFI 3
+// 0 has inverted logic due to hardware limitations
 #define EMPTY 0
 
-#define IR 2
+#define IR 12
 #define IR_THRESHOLD 3000
 
 //pins for stepper
-#define STEPPER_A 4
-#define STEPPER_B 2
-#define STEPPER_C 14
-#define STEPPER_D 15
+#define STEPPER_A 2
+#define STEPPER_B 14
+#define STEPPER_C 15
+#define STEPPER_D 13
 
 #define STEPPER_DELAY 1500
 
@@ -214,7 +216,7 @@ void setup() {
 
   digitalWrite(POWER, HIGH);
   digitalWrite(WIFI, LOW);
-  digitalWrite(EMPTY, LOW);
+  digitalWrite(EMPTY, HIGH);
 
   Serial.begin(115200);
 
