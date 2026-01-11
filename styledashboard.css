@@ -109,3 +109,21 @@ body {
     justify-self: center;
   }
 }
+.admin-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: none;
+  background: #0f172a;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0.85;
+  z-index: 1000;
+}
+
+.admin-btn:hover {
+  opacity: 1;
+}
