@@ -149,6 +149,31 @@
         }, 30000);
     });
 });
+// === Admin tlačítko ===
+const adminBtn = document.getElementById("admin-btn");
+
+adminBtn.addEventListener("click", async () => {
+  const { data: userData } = await supabaseClient.auth.getUser();
+
+  if (!userData.user) {
+    alert("Nejste přihlášen");
+    return;
+  }
+
+  const { data: userRow, error } = await supabaseClient
+    .from("users")
+    .select("admin")
+    .eq("email", userData.user.email)
+    .single();
+
+  if (error || !userRow || userRow.admin !== true) {
+    alert("Nemáte oprávnění správce");
+    return;
+  }
+
+  // ✔ admin ověřen → přesměrování
+  window.location.href = "adminui.html";
+});
 
 </script>
 
