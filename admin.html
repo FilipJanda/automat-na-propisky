@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin UI</title>
+
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- QRCode -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #1e293b;
+    }
+
+    .card {
+      background: white;
+      padding: 28px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      color: #2563eb;
+    }
+
+    input {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5f5;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .qr-box {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error {
+      color: #dc2626;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Admin UI</h1>
+  <button id="back" style="margin-top:4px;background:#e5e7eb;color:#1e293b">← Zpět na dashboard</button>
+
+    <input id="ssid" placeholder="WiFi SSID" />
+    <input id="password" placeholder="Heslo k WiFi" />
+
+    <button id="generate">Vygenerovat QR</button>
+
+    <div id="qr" class="qr-box"></div>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    /******** SUPABASE ********/
+    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const errorEl = document.getElementById("error");
+    const qrBox = document.getElementById("qr");
+
+    /******** OCHRANA STRÁNKY ********/
+    async function checkAdmin() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+
+      if (!user) {
+        location.href = "index.html";
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("users")
+        .select("admin")
+        .eq("email", user.email)
+        .single();
+
+      if (error || !data.admin) {
+        location.href = "dashboard.html";
+      }
+    }
+
+    checkAdmin();
+
+  // návrat na dashboard
+  document.getElementById("back").addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+  });
+
+    /******** QR GENERÁTOR ********/
+    document.getElementById("generate").addEventListener("click", () => {
+      errorEl.textContent = "";
+      qrBox.innerHTML = "";
+
+      const ssid = document.getElementById("ssid").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!ssid || !password) {
+        errorEl.textContent = "Vyplň SSID i heslo.";
+        return;
+      }
+
+      // WiFi QR standard
+      const qrData = `WIFI:T:WPA;S:${ssid};P:${password};;`;
+
+      QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+        if (err) {
+          errorEl.textContent = "Chyba při generování QR.";
+          return;
+        }
+        qrBox.appendChild(canvas);
+      });
+    });
+  </script>
+
+</body>
+</html>
