@@ -100,12 +100,15 @@
 
     /******** OCHRANA STRÁNKY ********/
     async function checkAdmin() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
-      if (!user) {
+      if (!session || !session.user) {
+        console.log("Žádná session – přesměrování");
         location.href = "index.html";
         return;
       }
+
+      const user = session.user;
 
       const { data, error } = await supabaseClient
         .from("users")
@@ -113,10 +116,16 @@
         .eq("email", user.email)
         .single();
 
-      if (error || !data.admin) {
+      if (error || !data?.admin) {
+        console.log("Neadmin – přesměrování");
         location.href = "dashboard.html";
+        return;
       }
+
+      // ✔ vše OK
+      document.body.style.display = "flex";
     }
+
 
     checkAdmin();
 
