@@ -31,7 +31,7 @@
     <footer class="bottom-bar">
         2026 propiskomat. Všechna práva vyhrazena.
     </footer>
-<button id="admin-btn" class="admin-btn">Admin</button>
+<button id="admin-btn" class="admin-btn" style="display:none">Admin</button>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
@@ -152,30 +152,29 @@
 // === Admin tlačítko ===
 const adminBtn = document.getElementById("admin-btn");
 
-    adminBtn.addEventListener("click", async () => {
-        const { data: userData } = await supabaseClient.auth.getUser();
+   document.addEventListener("DOMContentLoaded", async () => {
+        const adminBtn = document.getElementById("admin-btn");
 
-        if (!userData.user) {
-            alert("Nejste přihlášen");
-            return;
-        }
+         const { data: { session } } = await supabaseClient.auth.getSession();
+         if (!session || !session.user) return;
 
-        const { data: userRow, error } = await supabaseClient
-            .from("users")
+         const user = session.user;
+
+        const { data, error } = await supabaseClient
+         .from("users")
             .select("admin")
-            .eq("email", userData.user.email)
+            .eq("id", user.id)
             .single();
 
-        if (error || !userRow || userRow.admin !== true) {
-        alert("Nemáte oprávnění správce");
-            return;
+        if (!error && data?.admin === true) {
+            adminBtn.style.display = "block";
         }
-
-        // ✔ admin ověřen → přesměrování
+    });
+    adminBtn.addEventListener("click", async () => {
         window.location.href = "admin.html";
     });
 
-</script>
+</script> 
 
 
 
