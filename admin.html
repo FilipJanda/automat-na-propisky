@@ -88,7 +88,7 @@
     <div id="qr" class="qr-box"></div>
     <div id="error" class="error"></div>
   </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     /******** SUPABASE ********/
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
@@ -113,7 +113,7 @@
       const { data, error } = await supabaseClient
         .from("users")
         .select("admin")
-        .eq("email", user.email)
+        .eq("id", user.id)
         .single();
 
       if (error || !data?.admin) {
@@ -147,17 +147,18 @@
         return;
       }
 
-      // WiFi QR standard
-      const qrData = `WIFI:T:WPA;S:${ssid};P:${password};;`;
+      // 🔹 TEXTOVÝ QR: ssid/heslo
+      const qrData = ssid;
 
       QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
-        if (err) {
+       if (err) {
           errorEl.textContent = "Chyba při generování QR.";
           return;
         }
         qrBox.appendChild(canvas);
       });
     });
+
   </script>
 
 </body>
