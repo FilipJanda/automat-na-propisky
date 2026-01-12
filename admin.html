@@ -116,11 +116,7 @@
         .eq("id", user.id)
         .single();
 
-      if (error || !data?.admin) {
-        console.log("Neadmin – přesměrování");
-        location.href = "dashboard.html";
-        return;
-      }
+      
 
       // ✔ vše OK
       document.body.style.display = "flex";
