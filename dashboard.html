@@ -15,7 +15,11 @@
 
     <!-- HEADER -->
     <header class="top-bar">
-      <div class="tokens" id="token_count">– tokenů</div>
+      <div class="tokens">
+         <span id="token_count">–</span> tokenů
+         <span id="admin_status" class="admin-badge"></span>
+    </div>
+
       <div class="user" id="email">Načítám…</div>
       <button class="buy-btn">Koupit tokeny</button>
     </header>
@@ -42,6 +46,7 @@
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    
     const emailEl = document.getElementById("email");
     const token_countEl = document.getElementById("token_count");
     const btnQR = document.getElementById("generate-qr");
@@ -72,50 +77,65 @@
 
         const newKey = generateTempKey();
 
-        // --- najít uživatele podle emailu ---
-        const { data: existing } = await supabaseClient
+        const { data: existing, error } = await supabaseClient
             .from("users")
             .select("id, token_count, temporary_key, admin")
             .eq("email", email)
             .maybeSingle();
 
+        const adminStatusEl = document.getElementById("admin_status");
+        const adminBtn = document.getElementById("admin-btn");
+
         if (existing) {
-            // update temporary_key
+            // aktualizace temporary_key
             await supabaseClient
-                .from("users")
-                .update({ temporary_key: newKey })
-                .eq("email", email);
+            .from("users")
+            .update({ temporary_key: newKey })
+            .eq("email", email);
 
             currentUserRow = {
-                id: existing.id,
-                email: email,
-                token_count: existing.token_count,
-                temporary_key: newKey,
-                admin: existing.admin
+            id: existing.id,
+            email,
+            token_count: existing.token_count,
+            temporary_key: newKey,
+            admin: existing.admin
             };
-        if (existing.admin === 1) {
-                document.getElementById("admin-btn").style.display = "block";
-            }
-           
-           
+
+            // tokeny
             token_countEl.textContent = existing.token_count;
+
+            // admin badge
+            if (existing.admin === true) {
+            adminStatusEl.textContent = "ADMIN";
+            adminStatusEl.classList.add("admin-badge", "admin-true");
+            adminBtn.style.display = "block";
+            } else {
+            adminStatusEl.textContent = "UŽIVATEL";
+            adminStatusEl.classList.add("admin-badge", "admin-false");
+            }
+
             return;
         }
 
-        // pokud neexistuje → vytvořit
+        // === pokud uživatel neexistuje → vytvořit ===
         const { data: inserted } = await supabaseClient
             .from("users")
-            .insert([{ 
-                email: email, 
-                temporary_key: newKey,
-                admin: 0
+            .insert([{
+            email,
+            temporary_key: newKey,
+            token_count: 0,
+            admin: false
             }])
             .select()
             .single();
 
         currentUserRow = inserted;
-        token_countEl.textContent = inserted.admin;
-    }
+        token_countEl.textContent = inserted.token_count;
+
+        adminStatusEl.textContent = "UŽIVATEL";
+        adminStatusEl.classList.add("admin-badge", "admin-false");
+        }
+
 
     loadUser();
     let qrTimeout = null;
