@@ -93,8 +93,12 @@
                 temporary_key: newKey,
                 admin: existing.admin
             };
-
-            token_countEl.textContent = existing.token_count + " tokenů";
+        if (existing.admin === 1) {
+                document.getElementById("admin-btn").style.display = "block";
+            }
+           
+           
+            token_countEl.textContent = existing.token_count;
             return;
         }
 
@@ -110,7 +114,7 @@
             .single();
 
         currentUserRow = inserted;
-        token_countEl.textContent = inserted.token_count + " tokenů";
+        token_countEl.textContent = inserted.admin;
     }
 
     loadUser();
@@ -151,12 +155,12 @@
         }, 30000);
     });
     });
-    
+    /*
     // === Admin tlačítko ===
     const adminBtn = document.getElementById("admin-btn");
 
 
-        /*
+        
        document.addEventListener("DOMContentLoaded", async () => {
             const adminBtn = document.getElementById("admin-btn");
             adminBtn.style.display = "none"; // Výchozí stav: skryté
@@ -166,7 +170,7 @@
                 adminBtn.style.display = "block"; // Zobrazit tlačítko, pokud je uživatel admin
             }
 
-         */
+        
        document.addEventListener("DOMContentLoaded", async () => {
         // Načtení přihlášeného uživatele
         const { data: userData } = await supabaseClient.auth.getUser();
@@ -195,7 +199,7 @@
     
     });
 
-    
+     */
 
 
 </script> 
