@@ -99,32 +99,7 @@
     const qrBox = document.getElementById("qr");
 
     /******** OCHRANA STRÁNKY ********/
-    async function checkAdmin() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-
-      if (!session || !session.user) {
-        console.log("Žádná session – přesměrování");
-        location.href = "index.html";
-        return;
-      }
-
-      const user = session.user;
-
-      const { data, error } = await supabaseClient
-        .from("users")
-        .select("admin")
-        .eq("id", user.id)
-        .single();
-
-      
-
-      // ✔ vše OK
-      document.body.style.display = "flex";
-    }
-
-
-    checkAdmin();
-
+    
   // návrat na dashboard
   document.getElementById("back").addEventListener("click", () => {
     window.location.href = "dashboard.html";
