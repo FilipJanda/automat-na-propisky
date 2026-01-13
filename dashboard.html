@@ -109,6 +109,9 @@
             adminStatusEl.textContent = "ADMIN";
             adminStatusEl.classList.add("admin-badge", "admin-true");
             adminBtn.style.display = "block";
+            adminBtn.addEventListener("click", async () => {
+              window.location.href = "admin.html";
+            });
             } else {
             adminStatusEl.textContent = "UŽIVATEL";
             adminStatusEl.classList.add("admin-badge", "admin-false");
