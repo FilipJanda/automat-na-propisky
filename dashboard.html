@@ -75,7 +75,7 @@
         // --- najít uživatele podle emailu ---
         const { data: existing } = await supabaseClient
             .from("users")
-            .select("id, token_count, temporary_key")
+            .select("id, token_count, temporary_key, admin")
             .eq("email", email)
             .maybeSingle();
 
@@ -90,7 +90,8 @@
                 id: existing.id,
                 email: email,
                 token_count: existing.token_count,
-                temporary_key: newKey
+                temporary_key: newKey,
+                admin: existing.admin
             };
 
             token_countEl.textContent = existing.token_count + " tokenů";
@@ -102,7 +103,8 @@
             .from("users")
             .insert([{ 
                 email: email, 
-                temporary_key: newKey
+                temporary_key: newKey,
+                admin: 0
             }])
             .select()
             .single();
@@ -148,31 +150,53 @@
             qrTimeout = null;
         }, 30000);
     });
-});
-// === Admin tlačítko ===
-const adminBtn = document.getElementById("admin-btn");
+    });
+    
+    // === Admin tlačítko ===
+    const adminBtn = document.getElementById("admin-btn");
 
-   document.addEventListener("DOMContentLoaded", async () => {
-        const adminBtn = document.getElementById("admin-btn");
 
-         const { data: { session } } = await supabaseClient.auth.getSession();
-         if (!session || !session.user) return;
+        /*
+       document.addEventListener("DOMContentLoaded", async () => {
+            const adminBtn = document.getElementById("admin-btn");
+            adminBtn.style.display = "none"; // Výchozí stav: skryté
+            const email = "08fililin@gmail.com";
+            const admin = 1;
+            if (admin === 1 && email === "08fililin@gmail.com") {
+                adminBtn.style.display = "block"; // Zobrazit tlačítko, pokud je uživatel admin
+            }
 
-         const user = session.user;
+         */
+       document.addEventListener("DOMContentLoaded", async () => {
+        // Načtení přihlášeného uživatele
+        const { data: userData } = await supabaseClient.auth.getUser();
+        if (!userData.user) {
+            window.location.href = "index.html";
+            return;
+        }
+        const email = userData.user.email;
 
-        const { data, error } = await supabaseClient
-         .from("users")
+
+
+        // Načtení údajů o uživateli z databáze
+        const { data: existing } = await supabaseClient
+            .from("users")
             .select("admin")
-            .eq("id", user.id)
-            .single();
+            .eq("email", email)
+            .maybeSingle();
 
-        if (!error && data?.admin === true) {
+        // Pokud je admin true, zobrazit tlačítko
+        if (existing?.admin) {
             adminBtn.style.display = "block";
         }
+     });
+            adminBtn.addEventListener("click", async () => {
+              window.location.href = "admin.html";
+    
     });
-    adminBtn.addEventListener("click", async () => {
-        window.location.href = "admin.html";
-    });
+
+    
+
 
 </script> 
 
