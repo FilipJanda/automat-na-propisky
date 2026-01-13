@@ -1,0 +1,1 @@
+Automaty používají svou MAC adresu z výroby v databázi, v tabulce machines jako PK. Toto je nejlepší způsob protože MAC je přiřazena z výroby a neměla by jít měnit, také se vyhne ostatním způsobům přiřazování ID které jsou náchylné k lidské chybě.
