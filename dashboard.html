@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styledashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -178,51 +180,7 @@
         }, 30000);
     });
     });
-    /*
-    // === Admin tlačítko ===
-    const adminBtn = document.getElementById("admin-btn");
-
-
-        
-       document.addEventListener("DOMContentLoaded", async () => {
-            const adminBtn = document.getElementById("admin-btn");
-            adminBtn.style.display = "none"; // Výchozí stav: skryté
-            const email = "08fililin@gmail.com";
-            const admin = 1;
-            if (admin === 1 && email === "08fililin@gmail.com") {
-                adminBtn.style.display = "block"; // Zobrazit tlačítko, pokud je uživatel admin
-            }
-
-        
-       document.addEventListener("DOMContentLoaded", async () => {
-        // Načtení přihlášeného uživatele
-        const { data: userData } = await supabaseClient.auth.getUser();
-        if (!userData.user) {
-            window.location.href = "index.html";
-            return;
-        }
-        const email = userData.user.email;
-
-
-
-        // Načtení údajů o uživateli z databáze
-        const { data: existing } = await supabaseClient
-            .from("users")
-            .select("admin")
-            .eq("email", email)
-            .maybeSingle();
-
-        // Pokud je admin true, zobrazit tlačítko
-        if (existing?.admin) {
-            adminBtn.style.display = "block";
-        }
-     });
-            adminBtn.addEventListener("click", async () => {
-              window.location.href = "admin.html";
     
-    });
-
-     */
 
 
 </script> 

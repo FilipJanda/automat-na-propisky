@@ -16,6 +16,7 @@ body {
     h1 {
       font-size: 1.8rem;
       margin-bottom: 0.5rem;
+      font-family: "Inter", sans-serif;
     }
 
     p {
@@ -23,23 +24,26 @@ body {
       color: #475569;
       margin-bottom: 2rem;
       line-height: 1.5;
+      font-family: "Inter", sans-serif;
     }
 
     button {
       background-color: #2563eb;
+      font-family: "Inter", sans-serif;
       color: white;
       border: none;
       padding: 0.8rem 1.6rem;
       border-radius: 12px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
     button:hover {
       background-color: #1d4ed8;
-      transform: translateY(-1px);
+      transform: scale(1.08);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      font-family: "Inter", sans-serif;
     }
 
     code {
