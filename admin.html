@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="pics/pen.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <title>Admin UI</title>
 
   <!-- Supabase -->
@@ -55,10 +58,13 @@
       color: white;
       font-size: 1rem;
       cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
     button:hover {
       background: #1d4ed8;
+      transform: scale(1.08);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
     .qr-box {
