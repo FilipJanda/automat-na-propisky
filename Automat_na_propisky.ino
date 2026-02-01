@@ -25,7 +25,8 @@
 
 const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
 const int httpsPort = 443;
-const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODUyMDE3MSwiZXhwIjoyMDc0MDk2MTcxfQ.GbV66aF7zwqLtsqrZ-gGKScqnaV-d3lTO7WDMBLKBY8";
+//should be anon key
+const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
 ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
 struct QRCodeData qrCodeData;
@@ -148,36 +149,57 @@ void stepperRotate() {
   delay(1);
 }
 
-bool deductToken(char* uid, char* temporary_key) {
-  HTTPClient http;
-  http.begin("https://pgdtypgzzdchqefcgcaz.supabase.co/rest/v1/rpc/subtract_token");
-  http.addHeader("apikey", supabaseKey);
-  http.addHeader("Authorization", String("Bearer ") + supabaseKey);
-  
-  char* body = "{ \"user_id\":12 }";
-  
-  int httpResponseCode = http.POST(body);
+bool dispense()
+{
+  Serial.println("Dispensing now...");
 
-  if (httpResponseCode > 0)
+  unsigned long timeout = millis() + 10000;
+
+  while (millis() < timeout)
   {
-    if (http.getString() == "true")
+    stepperRotate();
+    
+    if (analogRead(IR) > IR_THRESHOLD)
+    {
       return true;
-    else
-      return false;
+    }
   }
 
-  http.end();
+  return false;
+}
 
-  /*if (httpResponseCode > 0) {
-    Serial.println("Response: " + http.getString());
-    http.end();
-    return true;
-  } 
-  else {
-    Serial.printf("Error: %s\n", http.errorToString(httpResponseCode).c_str());
+bool deductToken(char* uid, char* temporary_key) {
+  HTTPClient http;
+  http.addHeader("Authorization", String("Bearer ") + supabaseKey);
+
+  char jsonBody[64];
+  snprintf(jsonBody, sizeof(jsonBody), "{\"user_id\":%d,\"temporary_key\":%s, \"machine_id\" \"}", uid, temporary_key, ESP.getEfuseMac());
+  
+  int httpResponseCode = http.POST(jsonBody);
+
+  if (httpResponseCode != 200)
+  {
+    return false;
+  }
+
+  char* payload = http.getString();
+
+  if (payload == "false")
+  {
+    Serial.println("Database declined transaction");
     http.end();
     return false;
-  }*/
+  }
+
+  if (!dispense())
+  {
+    return false;
+  }
+
+  // call finish transaction
+
+  http.end();
+  return false;
 }
 
 char* scanQR() {
@@ -274,7 +296,16 @@ void setup() {
 }
 
 void loop() {
+  
+  //
+  // loop() should contain only concise code structure from simple decision logic and function calls
+  // 
+  // refactor this crap:
+  //
+
   Serial.println("Scan QR");
+
+  //Code waits here for QR scan
   char* data = scanQR();
   char* pch = strtok(data, "/");
   char* uid;
@@ -302,24 +333,6 @@ void loop() {
   }
 
   if(deductToken(uid, tempKey))
-  {
-    Serial.println("Dispensing now...");
-
-    unsigned long timeout = millis() + 10000;
-    while (true)
-    {
-      stepperRotate();
-      
-      if (analogRead(IR) > IR_THRESHOLD)
-        break;
-
-      if (millis() >= timeout)
-      {
-        Serial.println("Error while dispensing");
-        break;
-      }
-    }
-  }
   else
   {
     blinkLED(POWER);
