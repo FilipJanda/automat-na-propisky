@@ -23,6 +23,8 @@
 
 #define STEPPER_DELAY 1500
 
+#define QR_SCAN_DELAY 100
+
 const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
 const int httpsPort = 443;
 //should be anon key
@@ -149,8 +151,7 @@ void stepperRotate() {
   delay(1);
 }
 
-bool dispense()
-{
+bool dispense() {
   Serial.println("Dispensing now...");
 
   unsigned long timeout = millis() + 10000;
@@ -202,16 +203,37 @@ bool deductToken(char* uid, char* temporary_key) {
   return false;
 }
 
-char* scanQR() {
+void scanQR(char** param1, char** param2) {
   while (true) 
   {
     if (reader.receiveQrCode(&qrCodeData, 100) && qrCodeData.valid) 
     {
       char* payload = (char*)qrCodeData.payload;
-      return payload;
+      char* pch = strtok(payload, "/");
+
+      if (pch != NULL)
+      {
+        *param1 = pch;
+        pch = strtok(NULL, "/");
+        Serial.println("param1 acquired");
+      }
+      else 
+      {
+        Serial.println("Invalid QR data");
+      }
+
+      if (pch != NULL)
+      {
+        *param2 = pch;
+        Serial.println("param2 acquired");
+      }
+      else 
+      {
+        Serial.println("Invalid QR data");
+      }
     }
     
-    delay(100);
+    delay(QR_SCAN_DELAY);
   }
 }
 
