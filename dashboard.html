@@ -23,7 +23,7 @@
     </div>
 
       <div class="user" id="email">Načítám…</div>
-      <button class="buy-btn">Koupit tokeny</button>
+      <button class="buy-btn" onclick="window.location.href='nakup.html'">Koupit tokeny</button>
     </header>
 
     <!-- MAIN -->
@@ -145,9 +145,7 @@
     loadUser();
     let qrTimeout = null;
     
-    document.getElementById("buy-btn").addEventListener("click", () => {
-         window.location.href = "nakup.html";
-    });
+    
 
 
     // === Generování QR kódu ===
