@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nákup tokenů</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #1e293b;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 28px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #2563eb;
+    }
+
+    .description {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #475569;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .qr-container img {
+      width: 220px;
+      max-width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .account {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    .back-btn {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .back-btn:hover {
+      background: #1d4ed8;
+      transform: scale(1.08);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Nákup tokenů</h1>
+
+    <div class="description">
+      Pro nákup tokenů naskenujte QR kód ve své bankovní aplikaci, nebo použijte číslo účtu.
+      Do poznámky uveďte svůj email na kterém jste přihlášeni na stránce.
+      Tokeny vám budou připsány nejpozději do 24h po přijetí platby.
+    </div>
+
+    <div class="qr-container">
+      <!-- Nahraď obrázek svým QR kódem -->
+      <img src="pics/platebniqrkod.jpeg" alt="QR kód pro platbu">
+    </div>
+
+    <div class="account">
+      Číslo účtu: 1093190054/3030
+    </div>
+
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">
+      ← Zpět
+    </button>
+  </div>
+
+</body>
+</html>
