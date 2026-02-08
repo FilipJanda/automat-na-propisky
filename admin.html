@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin</title>
   <link rel="icon" type="image/png" href="pics/pen.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <title>Admin UI</title>
-
-  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <!-- QRCode -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
@@ -19,27 +16,50 @@
       font-family: Inter, system-ui, sans-serif;
       background: linear-gradient(135deg, #eef2ff, #dbeafe);
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       color: #1e293b;
+    }
+
+    .topbar {
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      color: #2563eb;
+    }
+
+    .topbar button {
+      background: #e5e7eb;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
 
     .card {
       background: white;
-      padding: 28px;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-      width: 100%;
-      max-width: 420px;
+      padding: 24px;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
-    h1 {
-      margin: 0;
-      text-align: center;
+    h2 {
+      margin: 0 0 10px 0;
       color: #2563eb;
     }
 
@@ -50,7 +70,7 @@
       font-size: 1rem;
     }
 
-    button {
+    button.primary {
       padding: 12px;
       border-radius: 14px;
       border: none;
@@ -58,84 +78,146 @@
       color: white;
       font-size: 1rem;
       cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    button:hover {
+    button.primary:hover {
       background: #1d4ed8;
-      transform: scale(1.08);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
     .qr-box {
       min-height: 220px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+    }
+
+    .info {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #475569;
     }
 
     .error {
       color: #dc2626;
       text-align: center;
     }
+
+    /* 📱 MOBIL */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>Admin UI</h1>
-  <button id="back" style="margin-top:4px;background:#e5e7eb;color:#1e293b">← Zpět na dashboard</button>
-
-    <input id="ssid" placeholder="WiFi SSID" />
-    <input id="password" placeholder="Heslo k WiFi" />
-
-    <button id="generate">Vygenerovat QR</button>
-
-    <div id="qr" class="qr-box"></div>
-    <div id="error" class="error"></div>
+  <div class="topbar">
+    <h1>Admin</h1>
+    <button onclick="location.href='dashboard.html'">← Dashboard</button>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <div class="container">
+
+    <!-- 🔹 SPRÁVA UŽIVATELŮ -->
+    <div class="card">
+      <h2>Správa uživatelů</h2>
+
+      <input id="userEmail" placeholder="Email uživatele" />
+      <input id="tokenAmount" type="number" placeholder="Počet tokenů" />
+
+      <button class="primary" id="addTokens">
+        Přidat tokeny
+      </button>
+
+      <div id="userInfo" class="info"></div>
+      <div id="userError" class="error"></div>
+    </div>
+
+    <!-- 🔹 WIFI QR -->
+    <div class="card">
+      <h2>Přihlášení na Wi-Fi</h2>
+
+      <input id="ssid" placeholder="WiFi SSID" />
+      <input id="password" placeholder="Heslo" />
+
+      <button class="primary" id="generate">
+        Vygenerovat QR
+      </button>
+
+      <div id="qr" class="qr-box"></div>
+      <div id="wifiError" class="error"></div>
+    </div>
+
+  </div>
+
   <script>
     /******** SUPABASE ********/
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
     const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const errorEl = document.getElementById("error");
-    const qrBox = document.getElementById("qr");
-
-    /******** OCHRANA STRÁNKY ********/
-    
-  // návrat na dashboard
-  document.getElementById("back").addEventListener("click", () => {
-    window.location.href = "dashboard.html";
-  });
-
-    /******** QR GENERÁTOR ********/
+    /******** WIFI QR ********/
     document.getElementById("generate").addEventListener("click", () => {
-      errorEl.textContent = "";
-      qrBox.innerHTML = "";
-
       const ssid = document.getElementById("ssid").value.trim();
       const password = document.getElementById("password").value.trim();
+      const qrBox = document.getElementById("qr");
+      const error = document.getElementById("wifiError");
+
+      error.textContent = "";
+      qrBox.innerHTML = "";
 
       if (!ssid || !password) {
-        errorEl.textContent = "Vyplň SSID i heslo.";
+        error.textContent = "Vyplň SSID i heslo.";
         return;
       }
 
-      // 🔹 TEXTOVÝ QR: ssid/heslo
-      const qrData = ssid;
+      const qrData = `${ssid}/${password}`;
 
       QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
-       if (err) {
-          errorEl.textContent = "Chyba při generování QR.";
+        if (err) {
+          error.textContent = "Chyba při generování QR.";
           return;
         }
         qrBox.appendChild(canvas);
       });
     });
 
+    /******** TOKENY ********/
+    document.getElementById("addTokens").addEventListener("click", async () => {
+      const email = document.getElementById("userEmail").value.trim();
+      const amount = parseInt(document.getElementById("tokenAmount").value);
+      const info = document.getElementById("userInfo");
+      const error = document.getElementById("userError");
+
+      info.textContent = "";
+      error.textContent = "";
+
+      if (!email || !amount) {
+        error.textContent = "Vyplň email i počet tokenů.";
+        return;
+      }
+
+      const { data, error: fetchErr } = await supabaseClient
+        .from("users")
+        .select("id, token_count")
+        .eq("email", email)
+        .single();
+
+      if (fetchErr || !data) {
+        error.textContent = "Uživatel nenalezen.";
+        return;
+      }
+
+      const newCount = data.token_count + amount;
+
+      await supabaseClient
+        .from("users")
+        .update({ token_count: newCount })
+        .eq("id", data.id);
+
+      info.textContent = `Tokeny přidány. Nový stav: ${newCount}`;
+    });
   </script>
 
 </body>
