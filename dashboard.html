@@ -144,6 +144,11 @@
 
     loadUser();
     let qrTimeout = null;
+    
+    document.getElementById("buy-btn").addEventListener("click", () => {
+         window.location.href = "nakup.html";
+    });
+
 
     // === Generování QR kódu ===
     btnQR.addEventListener("click", async () => {
