@@ -217,10 +217,7 @@
         .eq("email", user.email)
         .maybeSingle();
 
-      if (error || !userProfile || userProfile.admin !== true) {
-        alert("Nemáte oprávnění pro přístup do administrace.");
-        window.location.href = "dashboard.html"; // Není admin -> pryč
-      }
+      
     }
 
     // Spustit kontrolu při načtení
