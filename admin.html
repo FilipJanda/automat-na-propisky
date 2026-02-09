@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin</title>
+  <title>Admin Panel</title>
   <link rel="icon" type="image/png" href="pics/pen.png">
+  
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
@@ -13,7 +14,7 @@
   <style>
     body {
       margin: 0;
-      font-family: Inter, system-ui, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       background: linear-gradient(135deg, #eef2ff, #dbeafe);
       min-height: 100vh;
       color: #1e293b;
@@ -24,33 +25,42 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
     }
 
     .topbar h1 {
       margin: 0;
       color: #2563eb;
+      font-size: 1.5rem;
     }
 
     .topbar button {
       background: #e5e7eb;
       border: none;
-      padding: 10px 14px;
+      padding: 8px 16px;
       border-radius: 12px;
       cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .topbar button:hover {
+      background: #d1d5db;
     }
 
     .container {
       display: flex;
       gap: 20px;
       padding: 20px;
-      max-width: 1100px;
-      margin: 0 auto;
+      max-width: 1000px;
+      margin: 20px auto;
     }
 
     .card {
       background: white;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       padding: 24px;
       flex: 1;
       display: flex;
@@ -60,7 +70,15 @@
 
     h2 {
       margin: 0 0 10px 0;
-      color: #2563eb;
+      color: #1e293b;
+      font-size: 1.25rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: -8px;
+      margin-left: 4px;
     }
 
     input {
@@ -68,6 +86,13 @@
       border-radius: 12px;
       border: 1px solid #cbd5f5;
       font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     button.primary {
@@ -77,33 +102,47 @@
       background: #2563eb;
       color: white;
       font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
     }
 
     button.primary:hover {
       background: #1d4ed8;
     }
 
+    button.primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
     .qr-box {
-      min-height: 220px;
+      min-height: 200px;
       display: flex;
       justify-content: center;
       align-items: center;
+      background: #f8fafc;
+      border-radius: 12px;
     }
 
     .info {
       text-align: center;
       font-size: 0.9rem;
-      color: #475569;
+      color: #10b981; /* Zelená pro úspěch */
+      font-weight: 500;
+      min-height: 20px;
     }
 
     .error {
       color: #dc2626;
       text-align: center;
+      font-size: 0.9rem;
+      min-height: 20px;
     }
 
     /* 📱 MOBIL */
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
       .container {
         flex-direction: column;
       }
@@ -113,18 +152,20 @@
 <body>
 
   <div class="topbar">
-    <h1>Admin</h1>
-    <button onclick="location.href='dashboard.html'">← Dashboard</button>
+    <h1>Admin </h1>
+    <button onclick="location.href='dashboard.html'">← Zpět na Dashboard</button>
   </div>
 
   <div class="container">
 
-    <!-- 🔹 SPRÁVA UŽIVATELŮ -->
     <div class="card">
-      <h2>Správa uživatelů</h2>
-
-      <input id="userEmail" placeholder="Email uživatele" />
-      <input id="tokenAmount" type="number" placeholder="Počet tokenů" />
+      <h2>Přidat tokeny uživateli</h2>
+      
+      <label for="userEmail">Email uživatele</label>
+      <input id="userEmail" type="email" placeholder="např. jan@novak.cz" />
+      
+      <label for="tokenAmount">Počet tokenů k přidání</label>
+      <input id="tokenAmount" type="number" placeholder="např. 50" min="1" />
 
       <button class="primary" id="addTokens">
         Přidat tokeny
@@ -134,15 +175,17 @@
       <div id="userError" class="error"></div>
     </div>
 
-    <!-- 🔹 WIFI QR -->
     <div class="card">
-      <h2>Přihlášení na Wi-Fi</h2>
+      <h2>Generátor Wi-Fi QR</h2>
 
-      <input id="ssid" placeholder="WiFi SSID" />
-      <input id="password" placeholder="Heslo" />
+      <label for="ssid">Název sítě (SSID)</label>
+      <input id="ssid" placeholder="Název WiFi" />
+      
+      <label for="password">Heslo</label>
+      <input id="password" type="text" placeholder="Heslo k WiFi" />
 
       <button class="primary" id="generate">
-        Vygenerovat QR
+        Vygenerovat QR kód
       </button>
 
       <div id="qr" class="qr-box"></div>
@@ -152,54 +195,100 @@
   </div>
 
   <script>
-    /******** SUPABASE ********/
+    /******** 1. KONFIGURACE SUPABASE ********/
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
     const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUserRow = null;
+    /******** 2. KONTROLA ADMINA ********/
+    async function checkAdmin() {
+      // 1. Získáme přihlášeného uživatele (session)
+      const { data: { user } } = await supabaseClient.auth.getUser();
 
-    async function loadUser() {
-        const { data: userData } = await supabaseClient.auth.getUser();
-
-        if (!userData.user) {
-            window.location.href = "dashboard.html";
-            return;
-        }
-
-        const email = userData.user.email;
-        emailEl.textContent = email;
-
-
-        const { data: existing, error } = await supabaseClient
-            .from("users")
-            .select("id, token_count, temporary_key, admin")
-            .eq("email", email)
-            .maybeSingle();
-
-        const adminStatusEl = document.getElementById("admin_status");
-    if (existing) {       
-        // admin badge
-        if (existing.admin === true) {
-        adminStatusEl.textContent = "ADMIN";
-        adminStatusEl.classList.add("admin-badge", "admin-true");
-        }else {
-        adminStatusEl.textContent = "UŽIVATEL";
-        adminStatusEl.classList.add("admin-badge", "admin-false");
-        }
-
-        currentUserRow = {
-            id: existing.id,
-            email,
-            token_count: existing.token_count,
-            temporary_key: existing.temporary_key,
-            admin: existing.admin
-        };
-      
+      if (!user) {
+        window.location.href = "dashboard.html"; // Není přihlášen -> pryč
         return;
+      }
+
+      // 2. Podíváme se do tabulky 'users', jestli je admin
+      const { data: userProfile, error } = await supabaseClient
+        .from("users")
+        .select("admin")
+        .eq("email", user.email)
+        .maybeSingle();
+
+      if (error || !userProfile || userProfile.admin !== true) {
+        alert("Nemáte oprávnění pro přístup do administrace.");
+        window.location.href = "dashboard.html"; // Není admin -> pryč
+      }
     }
 
-    /******** WIFI QR ********/
+    // Spustit kontrolu při načtení
+    checkAdmin();
+
+
+    /******** 3. PŘIDÁNÍ TOKENŮ (Tvoje logika) ********/
+    const btnAdd = document.getElementById("addTokens");
+    
+    btnAdd.addEventListener("click", async () => {
+      const emailInput = document.getElementById("userEmail");
+      const amountInput = document.getElementById("tokenAmount");
+      const infoEl = document.getElementById("userInfo");
+      const errorEl = document.getElementById("userError");
+
+      const email = emailInput.value.trim();
+      const amount = parseInt(amountInput.value);
+
+      // Reset hlášek
+      infoEl.textContent = "";
+      errorEl.textContent = "";
+      btnAdd.disabled = true; // Zablokovat tlačítko po dobu načítání
+      btnAdd.textContent = "Pracuji...";
+
+      try {
+        if (!email || !amount || amount <= 0) {
+          throw new Error("Vyplň platný email a počet tokenů (> 0).");
+        }
+
+        // A. Najdi uživatele podle emailu (SELECT)
+        const { data: targetUser, error: searchError } = await supabaseClient
+          .from("users")
+          .select("id, token_count")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (searchError) throw searchError;
+        if (!targetUser) throw new Error("Uživatel s tímto emailem nebyl nalezen.");
+
+        // B. Spočítej nový stav (pokud je null, bereme 0)
+        const currentTokens = targetUser.token_count || 0;
+        const newTotal = currentTokens + amount;
+
+        // C. Ulož nový stav (UPDATE)
+        const { error: updateError } = await supabaseClient
+          .from("users")
+          .update({ token_count: newTotal })
+          .eq("id", targetUser.id);
+
+        if (updateError) throw updateError;
+
+        // Úspěch
+        infoEl.textContent = `Úspěch! Přidáno ${amount} tokenů. Uživatel ${email} má nyní: ${newTotal}.`;
+        
+        // Vyčistit pole (volitelné)
+        // amountInput.value = "";
+
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = err.message || "Nastala neznámá chyba.";
+      } finally {
+        btnAdd.disabled = false;
+        btnAdd.textContent = "Přidat tokeny";
+      }
+    });
+
+
+    /******** 4. WIFI QR (Původní funkce) ********/
     document.getElementById("generate").addEventListener("click", () => {
       const ssid = document.getElementById("ssid").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -216,7 +305,7 @@
 
       const qrData = `${ssid}/${password}`;
 
-      QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+      QRCode.toCanvas(qrData, { width: 180, margin: 2 }, (err, canvas) => {
         if (err) {
           error.textContent = "Chyba při generování QR.";
           return;
@@ -225,41 +314,6 @@
       });
     });
 
-    /******** TOKENY ********/
-    document.getElementById("addTokens").addEventListener("click", async () => {
-      const email = document.getElementById("userEmail").value.trim();
-      const amount = parseInt(document.getElementById("tokenAmount").value);
-      const info = document.getElementById("userInfo");
-      const error = document.getElementById("userError");
-
-      info.textContent = "";
-      error.textContent = "";
-
-      if (!email || !amount) {
-        error.textContent = "Vyplň email i počet tokenů.";
-        return;
-      }
-
-      const { data, error: fetchErr } = await supabaseClient
-        .from("users")
-        .select("id, token_count")
-        .eq("email", email)
-        .single();
-
-      if (fetchErr || !data) {
-        error.textContent = "Uživatel nenalezen.";
-        return;
-      }
-
-      const newCount = data.token_count + amount;
-
-      await supabaseClient
-        .from("users")
-        .update({ token_count: newCount })
-        .eq("id", data.id);
-
-      info.textContent = `Tokeny přidány. Nový stav: ${newCount}`;
-    });
   </script>
 
 </body>
