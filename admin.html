@@ -200,30 +200,31 @@
     const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    /******** 2. KONTROLA ADMINA ********/
+    /******** 2. OVĚŘENÍ ADMINA ********/
+
     async function checkAdmin() {
-      // 1. Získáme přihlášeného uživatele (session)
-      const { data: { user } } = await supabaseClient.auth.getUser();
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
 
-      if (!user) {
-        window.location.href = "dashboard.html"; // Není přihlášen -> pryč
-        return;
-      }
+    
 
-      // 2. Podíváme se do tabulky 'users', jestli je admin
-      const { data: userProfile, error } = await supabaseClient
+      // Najdeme uživatele v DB podle emailu
+      const { data: dbUser, error: dbError } = await supabaseClient
         .from("users")
         .select("admin")
         .eq("email", user.email)
         .maybeSingle();
 
-      
+      if (dbError || !dbUser || dbUser.admin !== true) {
+        alert("Nemáš oprávnění vstoupit na tuto stránku.");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      console.log("Admin ověřen:", user.email);
     }
 
-    // Spustit kontrolu při načtení
+    // Spustí kontrolu při načtení stránky
     checkAdmin();
-
-
     /******** 3. PŘIDÁNÍ TOKENŮ (Tvoje logika) ********/
     const btnAdd = document.getElementById("addTokens");
     
