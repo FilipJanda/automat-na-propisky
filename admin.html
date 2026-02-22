@@ -1,318 +1,277 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel</title>
-  <link rel="icon" type="image/png" href="pics/pen.png">
-  
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Panel</title>
+<link rel="icon" type="image/png" href="pics/pen.png">
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #eef2ff, #dbeafe);
-      min-height: 100vh;
-      color: #1e293b;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    .topbar {
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.5);
-      backdrop-filter: blur(10px);
-    }
+<style>
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #eef2ff, #dbeafe);
+  min-height: 100vh;
+  color: #1e293b;
+}
 
-    .topbar h1 {
-      margin: 0;
-      color: #2563eb;
-      font-size: 1.5rem;
-    }
+.topbar {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
 
-    .topbar button {
-      background: #e5e7eb;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
 
-    .topbar button:hover {
-      background: #d1d5db;
-    }
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
-    .container {
-      display: flex;
-      gap: 20px;
-      padding: 20px;
-      max-width: 1000px;
-      margin: 20px auto;
-    }
+.topbar h1 {
+  margin: 0;
+  color: #2563eb;
+  font-size: 1.5rem;
+}
 
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      padding: 24px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+.topbar button {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
 
-    h2 {
-      margin: 0 0 10px 0;
-      color: #1e293b;
-      font-size: 1.25rem;
-    }
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 20px auto;
+}
 
-    label {
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-bottom: -8px;
-      margin-left: 4px;
-    }
+.card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-    input {
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid #cbd5f5;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
+h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.25rem;
+}
 
-    input:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
+label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: -8px;
+  margin-left: 4px;
+}
 
-    button.primary {
-      padding: 12px;
-      border-radius: 14px;
-      border: none;
-      background: #2563eb;
-      color: white;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
+input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  font-size: 1rem;
+}
 
-    button.primary:hover {
-      background: #1d4ed8;
-    }
+button.primary {
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
 
-    button.primary:disabled {
-      background: #94a3b8;
-      cursor: not-allowed;
-    }
+button.primary:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
 
-    .qr-box {
-      min-height: 200px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f8fafc;
-      border-radius: 12px;
-    }
+.info {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #10b981;
+  min-height: 20px;
+}
 
-    .info {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #10b981; /* Zelená pro úspěch */
-      font-weight: 500;
-      min-height: 20px;
-    }
+.error {
+  color: #dc2626;
+  text-align: center;
+  font-size: 0.9rem;
+  min-height: 20px;
+}
 
-    .error {
-      color: #dc2626;
-      text-align: center;
-      font-size: 0.9rem;
-      min-height: 20px;
-    }
+.admin-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 
-    /* 📱 MOBIL */
-    @media (max-width: 600px) {
-      .container {
-        flex-direction: column;
-      }
-    }
-  </style>
+.admin-true {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <div class="topbar">
-    <h1>Admin </h1>
-    <button onclick="location.href='dashboard.html'">← Zpět na Dashboard</button>
+<div class="topbar">
+  <div class="top-left">
+    <h1>Admin Panel</h1>
+    <span id="admin_status" class="admin-badge"></span>
   </div>
 
-  <div class="container">
+  <div class="top-right">
+    <div id="email">Načítám…</div>
+    <button onclick="location.href='dashboard.html'">← Zpět</button>
+  </div>
+</div>
 
-    <div class="card">
-      <h2>Přidat tokeny uživateli</h2>
-      
-      <label for="userEmail">Email uživatele</label>
-      <input id="userEmail" type="email" placeholder="např. jan@novak.cz" />
-      
-      <label for="tokenAmount">Počet tokenů k přidání</label>
-      <input id="tokenAmount" type="number" placeholder="např. 50" min="1" />
+<div class="container">
 
-      <button class="primary" id="addTokens">
-        Přidat tokeny
-      </button>
+  <div class="card">
+    <h2>Přidat tokeny uživateli</h2>
 
-      <div id="userInfo" class="info"></div>
-      <div id="userError" class="error"></div>
-    </div>
+    <label>Email uživatele</label>
+    <input id="userEmail" type="email" />
 
-    <div class="card">
-      <h2>Generátor Wi-Fi QR</h2>
+    <label>Počet tokenů</label>
+    <input id="tokenAmount" type="number" min="1" />
 
-      <label for="ssid">Název sítě (SSID)</label>
-      <input id="ssid" placeholder="Název WiFi" />
-      
-      <label for="password">Heslo</label>
-      <input id="password" type="text" placeholder="Heslo k WiFi" />
+    <button class="primary" id="addTokens">Přidat tokeny</button>
 
-      <button class="primary" id="generate">
-        Vygenerovat QR kód
-      </button>
-
-      <div id="qr" class="qr-box"></div>
-      <div id="wifiError" class="error"></div>
-    </div>
-
+    <div id="userInfo" class="info"></div>
+    <div id="userError" class="error"></div>
   </div>
 
-  <script>
-    /******** 1. KONFIGURACE SUPABASE ********/
-    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</div>
 
-    /******** 2. OVĚŘENÍ ADMINA ********/
+<script>
+const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function checkAdmin() {
-      const { data: { user }, error } = await supabaseClient.auth.getUser();
+const emailEl = document.getElementById("email");
+const adminStatusEl = document.getElementById("admin_status");
+const btnAdd = document.getElementById("addTokens");
 
-    
+let currentAdmin = null;
 
-      // Najdeme uživatele v DB podle emailu
-      const { data: dbUser, error: dbError } = await supabaseClient
-        .from("users")
-        .select("admin")
-        .eq("email", user.email)
-        .maybeSingle();
+/* ===== NAČTENÍ + OVĚŘENÍ ADMINA ===== */
+async function loadAdmin() {
+  const { data: userData } = await supabaseClient.auth.getUser();
 
-      if (dbError || !dbUser || dbUser.admin !== true) {
-        alert("Nemáš oprávnění vstoupit na tuto stránku.");
-        window.location.href = "dashboard.html";
-        return;
-      }
+  if (!userData.user) {
+    window.location.href = "index.html";
+    return;
+  }
 
-      console.log("Admin ověřen:", user.email);
-    }
+  const email = userData.user.email;
+  emailEl.textContent = email;
 
-    // Spustí kontrolu při načtení stránky
-    checkAdmin();
-    /******** 3. PŘIDÁNÍ TOKENŮ (Tvoje logika) ********/
-    const btnAdd = document.getElementById("addTokens");
-    
-    btnAdd.addEventListener("click", async () => {
-      const emailInput = document.getElementById("userEmail");
-      const amountInput = document.getElementById("tokenAmount");
-      const infoEl = document.getElementById("userInfo");
-      const errorEl = document.getElementById("userError");
+  const { data: dbUser } = await supabaseClient
+    .from("users")
+    .select("id, admin")
+    .eq("email", email)
+    .maybeSingle();
 
-      const email = emailInput.value.trim();
-      const amount = parseInt(amountInput.value);
+  if (!dbUser || dbUser.admin !== true) {
+    alert("Nemáš oprávnění.");
+    window.location.href = "dashboard.html";
+    return;
+  }
 
-      // Reset hlášek
-      infoEl.textContent = "";
-      errorEl.textContent = "";
-      btnAdd.disabled = true; // Zablokovat tlačítko po dobu načítání
-      btnAdd.textContent = "Pracuji...";
+  currentAdmin = dbUser;
 
-      try {
-        if (!email || !amount || amount <= 0) {
-          throw new Error("Vyplň platný email a počet tokenů (> 0).");
-        }
+  adminStatusEl.textContent = "ADMIN";
+  adminStatusEl.classList.add("admin-true");
+}
 
-        // A. Najdi uživatele podle emailu (SELECT)
-        const { data: targetUser, error: searchError } = await supabaseClient
-          .from("users")
-          .select("id, token_count")
-          .eq("email", email)
-          .maybeSingle();
+loadAdmin();
 
-        if (searchError) throw searchError;
-        if (!targetUser) throw new Error("Uživatel s tímto emailem nebyl nalezen.");
+/* ===== PŘIDÁVÁNÍ TOKENŮ ===== */
+btnAdd.addEventListener("click", async () => {
 
-        // B. Spočítej nový stav (pokud je null, bereme 0)
-        const currentTokens = targetUser.token_count || 0;
-        const newTotal = currentTokens + amount;
+  if (!currentAdmin) {
+    alert("Nejsi admin.");
+    return;
+  }
 
-        // C. Ulož nový stav (UPDATE)
-        const { error: updateError } = await supabaseClient
-          .from("users")
-          .update({ token_count: newTotal })
-          .eq("id", targetUser.id);
+  const email = document.getElementById("userEmail").value.trim();
+  const amount = parseInt(document.getElementById("tokenAmount").value);
+  const infoEl = document.getElementById("userInfo");
+  const errorEl = document.getElementById("userError");
 
-        if (updateError) throw updateError;
+  infoEl.textContent = "";
+  errorEl.textContent = "";
 
-        // Úspěch
-        infoEl.textContent = `Úspěch! Přidáno ${amount} tokenů. Uživatel ${email} má nyní: ${newTotal}.`;
-        
-        // Vyčistit pole (volitelné)
-        // amountInput.value = "";
+  if (!email || !amount || amount <= 0) {
+    errorEl.textContent = "Zadej platný email a počet tokenů.";
+    return;
+  }
 
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = err.message || "Nastala neznámá chyba.";
-      } finally {
-        btnAdd.disabled = false;
-        btnAdd.textContent = "Přidat tokeny";
-      }
-    });
+  btnAdd.disabled = true;
+  btnAdd.textContent = "Pracuji...";
 
+  try {
+    const { data: targetUser } = await supabaseClient
+      .from("users")
+      .select("id, token_count")
+      .eq("email", email)
+      .maybeSingle();
 
-    /******** 4. WIFI QR (Původní funkce) ********/
-    document.getElementById("generate").addEventListener("click", () => {
-      const ssid = document.getElementById("ssid").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const qrBox = document.getElementById("qr");
-      const error = document.getElementById("wifiError");
+    if (!targetUser) throw new Error("Uživatel nenalezen.");
 
-      error.textContent = "";
-      qrBox.innerHTML = "";
+    const newTotal = (targetUser.token_count || 0) + amount;
 
-      if (!ssid || !password) {
-        error.textContent = "Vyplň SSID i heslo.";
-        return;
-      }
+    const { error } = await supabaseClient
+      .from("users")
+      .update({ token_count: newTotal })
+      .eq("id", targetUser.id);
 
-      const qrData = `${ssid}/${password}`;
+    if (error) throw error;
 
-      QRCode.toCanvas(qrData, { width: 180, margin: 2 }, (err, canvas) => {
-        if (err) {
-          error.textContent = "Chyba při generování QR.";
-          return;
-        }
-        qrBox.appendChild(canvas);
-      });
-    });
+    infoEl.textContent = `Hotovo. Nový stav: ${newTotal}`;
+  } catch (err) {
+    errorEl.textContent = err.message;
+  }
 
-  </script>
+  btnAdd.disabled = false;
+  btnAdd.textContent = "Přidat tokeny";
+});
+</script>
 
 </body>
 </html>
