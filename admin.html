@@ -86,7 +86,7 @@ body {
       color: #dc2626;
       text-align: center;
     }
-    
+
 h2 {
   margin: 0 0 10px 0;
   font-size: 1.25rem;
@@ -173,6 +173,9 @@ button.primary:disabled {
 
 <div class="container">
 
+  <div class="container">
+
+  <!-- TOKENY -->
   <div class="card">
     <h2>Přidat tokeny uživateli</h2>
 
@@ -187,6 +190,24 @@ button.primary:disabled {
     <div id="userInfo" class="info"></div>
     <div id="userError" class="error"></div>
   </div>
+
+  <!-- WIFI QR -->
+  <div class="card">
+    <h2>Wi-Fi QR generátor</h2>
+
+    <label>SSID</label>
+    <input id="ssid" type="text" />
+
+    <label>Heslo</label>
+    <input id="password" type="text" />
+
+    <button class="primary" id="generate">Vygenerovat QR</button>
+
+    <div id="qr" class="qr-box"></div>
+    <div id="wifiError" class="error"></div>
+  </div>
+
+</div>
 
 </div>
 
