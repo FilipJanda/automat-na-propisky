@@ -125,7 +125,7 @@
       }
 
       // 🔹 TEXTOVÝ QR: ssid/heslo
-      const qrData = ssid;
+      const qrData = ssid/password;
 
       QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
        if (err) {

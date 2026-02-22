@@ -75,6 +75,18 @@ body {
   gap: 14px;
 }
 
+.qr-box {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+.error {
+      color: #dc2626;
+      text-align: center;
+    }
+    
 h2 {
   margin: 0 0 10px 0;
   font-size: 1.25rem;
@@ -271,6 +283,31 @@ btnAdd.addEventListener("click", async () => {
   btnAdd.disabled = false;
   btnAdd.textContent = "Přidat tokeny";
 });
+
+/******** QR GENERÁTOR ********/
+  document.getElementById("generate").addEventListener("click", () => {
+    errorEl.textContent = "";
+    qrBox.innerHTML = "";
+
+    const ssid = document.getElementById("ssid").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!ssid || !password) {
+      errorEl.textContent = "Vyplň SSID i heslo.";
+      return;
+    }
+
+    // 🔹 TEXTOVÝ QR: ssid/heslo
+    const qrData = ssid/password;
+
+    QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+      if (err) {
+        errorEl.textContent = "Chyba při generování QR.";
+        return;
+      }
+      qrBox.appendChild(canvas);
+    });
+  });
 </script>
 
 </body>
