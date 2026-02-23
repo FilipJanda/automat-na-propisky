@@ -195,11 +195,11 @@ button.primary:disabled {
   <div class="card">
     <h2>Wi-Fi QR generátor</h2>
 
-    <label>SSID</label>
-    <input id="ssid" type="text" />
+    <label><input id="ssid" type="text"/>SSID</label>
+   
 
-    <label>Heslo</label>
-    <input id="password" type="text" />
+    <label><input id="password" type="text" />Heslo</label>
+    
 
     <button class="primary" id="generate">Vygenerovat QR</button>
 
@@ -254,6 +254,7 @@ async function loadAdmin() {
 
 loadAdmin();
 const errorEl = document.getElementById("userError");
+const qrBox = document.getElementById("qr");
 /* ===== PŘIDÁVÁNÍ TOKENŮ ===== */
 btnAdd.addEventListener("click", async () => {
 
