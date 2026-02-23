@@ -179,11 +179,11 @@ button.primary:disabled {
   <div class="card">
     <h2>Přidat tokeny uživateli</h2>
 
-    <label>Email uživatele</label>
-    <input id="userEmail" type="email" />
+    <label>Email uživatele<input id="userEmail" type="email" /></label>
+    
 
-    <label>Počet tokenů</label>
-    <input id="tokenAmount" type="number" min="1" />
+    <label>Počet tokenů<input id="tokenAmount" type="number" min="1" /></label>
+    
 
     <button class="primary" id="addTokens">Přidat tokeny</button>
 
@@ -195,10 +195,10 @@ button.primary:disabled {
   <div class="card">
     <h2>Wi-Fi QR generátor</h2>
 
-    <label><input id="ssid" type="text"/>SSID</label>
+    <label>SSID<input id="ssid" type="text"/></label>
    
 
-    <label><input id="password" type="text" />Heslo</label>
+    <label>Heslo<input id="password" type="text" /></label>
     
 
     <button class="primary" id="generate">Vygenerovat QR</button>
@@ -308,23 +308,23 @@ btnAdd.addEventListener("click", async () => {
 
 /******** QR GENERÁTOR ********/
   document.getElementById("generate").addEventListener("click", () => {
-    errorEl.textContent = "";
+    wifiError.textContent = "";
     qrBox.innerHTML = "";
 
     const ssid = document.getElementById("ssid").value.trim();
     const password = document.getElementById("password").value.trim();
 
     if (!ssid || !password) {
-      errorEl.textContent = "Vyplň SSID i heslo.";
+      wifiError.textContent = "Vyplň SSID i heslo.";
       return;
     }
 
     // 🔹 TEXTOVÝ QR: ssid/heslo
-    const qrData = ssid/password;
+    const qrData = ssid + "/" + password;
 
     QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
       if (err) {
-        errorEl.textContent = "Chyba při generování QR.";
+        wifiError.textContent = "Chyba při generování QR.";
         return;
       }
       qrBox.appendChild(canvas);
