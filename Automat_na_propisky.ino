@@ -1,8 +1,8 @@
 #include <WiFi.h>
 #include <Preferences.h>
 #include <HTTPClient.h>
-#include <Arduino_JSON.h>
-#include <string.h>
+//#include <Arduino_JSON.h>
+//#include <string.h>
 #include <ESP32QRCodeReader.h>
 
 //indicator pins
@@ -21,17 +21,17 @@
 #define STEPPER_C 15
 #define STEPPER_D 13
 
-#define STEPPER_DELAY 1500
-
 #define QR_SCAN_DELAY 100
 
-const char* host = "https://pgdtypgzzdchqefcgcaz.supabase.co";
-const int httpsPort = 443;
+const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
+const char* url_finish = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/finish_transaction";
 //should be anon key
 const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
 
 ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
 struct QRCodeData qrCodeData;
+
+HTTPClient http;
 
 //new credentials
 bool connectWiFi(String ssid, String password) {
@@ -93,7 +93,7 @@ bool connectWiFi() {
   return true;
 }
 
-void stepperRotate() {
+void stepperMove() {
   //krok 1
   digitalWrite(STEPPER_A, HIGH); 
   digitalWrite(STEPPER_B, LOW); 
@@ -158,7 +158,7 @@ bool dispense() {
 
   while (millis() < timeout)
   {
-    stepperRotate();
+    stepperMove();
     
     if (analogRead(IR) > IR_THRESHOLD)
     {
@@ -169,51 +169,55 @@ bool dispense() {
   return false;
 }
 
-bool deductToken(char* uid, char* temporary_key) {
-  HTTPClient http;
+bool DBProcessTransaction(char* uid, char* temporary_key, char* transaction_id) {
+  char jsonBody[256];
+  snprintf(jsonBody, sizeof(jsonBody), "{\"user_id\":%s,\"temporary_key\":\"%s\",\"machine_id\":%llu}", uid, temporary_key, ESP.getEfuseMac());
+  Serial.println(jsonBody);
+  http.begin(url_process);
   http.addHeader("Authorization", String("Bearer ") + supabaseKey);
-
-  char jsonBody[64];
-  snprintf(jsonBody, sizeof(jsonBody), "{\"user_id\":%d,\"temporary_key\":%s, \"machine_id\" \"}", uid, temporary_key, ESP.getEfuseMac());
-  
   int httpResponseCode = http.POST(jsonBody);
 
   if (httpResponseCode != 200)
   {
-    return false;
-  }
-
-  char* payload = http.getString();
-
-  if (payload == "false")
-  {
-    Serial.println("Database declined transaction");
+    Serial.print("HTTP error: ");
+    Serial.println(httpResponseCode);
     http.end();
     return false;
   }
 
-  if (!dispense())
-  {
-    return false;
-  }
-
-  // call finish transaction
+  String s = http.getString();
+  snprintf(transaction_id, 64, "%s", s.c_str());
 
   http.end();
+  return true;
+}
+
+bool DBFinishTransaction(char* transaction_id, char* success) {
+  char jsonBody[128];
+  snprintf(jsonBody, sizeof(jsonBody), "{\"transaction_id\":%s,\"success\":\"%s\"}", transaction_id, success);
+  Serial.println(jsonBody);
+  http.begin(url_finish);
+  http.addHeader("Authorization", String("Bearer ") + supabaseKey);
+  int httpResponseCode = http.POST(jsonBody);
+  http.end();
+
+  if (httpResponseCode == 200) return true;
   return false;
 }
 
-void scanQR(char** param1, char** param2) {
+void scanQR(char* param1, char* param2) {
   while (true) 
   {
     if (reader.receiveQrCode(&qrCodeData, 100) && qrCodeData.valid) 
     {
+      blinkLED(0);
+
       char* payload = (char*)qrCodeData.payload;
       char* pch = strtok(payload, "/");
 
       if (pch != NULL)
       {
-        *param1 = pch;
+        snprintf(param1, 64, pch);
         pch = strtok(NULL, "/");
         Serial.println("param1 acquired");
       }
@@ -224,13 +228,15 @@ void scanQR(char** param1, char** param2) {
 
       if (pch != NULL)
       {
-        *param2 = pch;
+        snprintf(param2, 64, pch);
         Serial.println("param2 acquired");
       }
       else 
       {
         Serial.println("Invalid QR data");
       }
+
+      return;
     }
     
     delay(QR_SCAN_DELAY);
@@ -241,9 +247,9 @@ void blinkLED(int pin) {
   for (int i = 0; i < 3; i++)
   {
     digitalWrite(pin, LOW);
-    delay(500);
+    delay(100);
     digitalWrite(pin, HIGH);
-    delay(500);
+    delay(100);
   }
 }
 
@@ -276,31 +282,9 @@ void setup() {
   {
     //Credentials missing or incorrect, acquire now
     Serial.println("Scanning for WiFi credentials...");    
-    char* credentials = scanQR();
-    char* pch = strtok(credentials, "/");
-    char* ssid;
-    char* password;
-
-    if (pch != NULL)
-    {
-      ssid = pch;
-      pch = strtok(NULL, "/");
-      Serial.println("SSID acquired");
-    }
-    else 
-    {
-      Serial.println("Invalid QR data");
-    }
-
-    if (pch != NULL)
-    {
-      password = pch;
-      Serial.println("Password acquired");
-    }
-    else 
-    {
-      Serial.println("Invalid QR data");
-    }
+    char ssid[64];
+    char password[64];
+    scanQR(ssid, password);
 
     if (connectWiFi(ssid, password))
     {
@@ -309,6 +293,7 @@ void setup() {
     else
     {
       Serial.println("WiFi failed");
+      //replace infinite loop with something that doesnt block forever and indicates issues even without serial
       while (true)
       {
         delay(1000);
@@ -318,46 +303,35 @@ void setup() {
 }
 
 void loop() {
-  
-  //
-  // loop() should contain only concise code structure from simple decision logic and function calls
-  // 
-  // refactor this crap:
-  //
-
   Serial.println("Scan QR");
 
-  //Code waits here for QR scan
-  char* data = scanQR();
-  char* pch = strtok(data, "/");
-  char* uid;
-  char* tempKey;
+  char uid[64];
+  char temporary_key[64];
+  xQueueReset(reader.qrCodeQueue);
+  scanQR(uid, temporary_key); // QR scan is blocking
 
-  if (pch != NULL)
+  char transaction_id[64];
+  bool infoOK = DBProcessTransaction(uid, temporary_key, transaction_id);
+
+  if(!infoOK)
   {
-    uid = pch;
-    pch = strtok(NULL, "/");
-    Serial.println("UID acquired");
-  }
-  else 
-  {
-    Serial.println("Invalid user QR data");
+    //blinkLED(POWER);
+    //digitalWrite(POWER, HIGH);
+    return;
   }
 
-  if (pch != NULL)
-  {
-    tempKey = pch;
-    Serial.println("Temporary key acquired");
-  }
-  else 
-  {
-    Serial.println("Invalid user QR data");
-  }
+  bool dispenseOK = dispense();
 
-  if(deductToken(uid, tempKey))
+  bool proceed;
+
+  if(!dispenseOK)
+    proceed = DBFinishTransaction(transaction_id, "false"); // Should always return false
   else
+    proceed = DBFinishTransaction(transaction_id, "true"); // Returns false if inventory runs out or machine manually set to inoperational
+
+  if (!proceed)
   {
-    blinkLED(POWER);
-    digitalWrite(POWER, HIGH);
+    // implement waiting for fix of problem, should read the status from the database i guess?
+    while(true) { }
   }
 }
