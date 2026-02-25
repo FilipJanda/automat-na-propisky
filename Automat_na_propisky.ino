@@ -4,6 +4,7 @@
 //#include <Arduino_JSON.h>
 //#include <string.h>
 #include <ESP32QRCodeReader.h>
+#include <FastLED.h>
 
 //indicator pins
 // 1 seems to be unusable
@@ -11,6 +12,9 @@
 #define WIFI 3
 // 0 has inverted logic due to hardware limitations
 #define EMPTY 0
+
+#define NUM_LEDS 10
+#define DATA_PIN 16
 
 #define IR 12
 #define IR_THRESHOLD 3000
@@ -22,6 +26,8 @@
 #define STEPPER_D 13
 
 #define QR_SCAN_DELAY 100
+
+CRGB leds[NUM_LEDS];
 
 const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
 const char* url_finish = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/finish_transaction";
@@ -254,19 +260,20 @@ void blinkLED(int pin) {
 }
 
 void setup() {
-  pinMode(POWER, OUTPUT);
-  pinMode(WIFI, OUTPUT);
-  pinMode(EMPTY, OUTPUT);
-  pinMode(IR, INPUT);
+  //pinMode(POWER, OUTPUT);
+  //pinMode(WIFI, OUTPUT);
+  //pinMode(EMPTY, OUTPUT);
+  //pinMode(IR, INPUT);
 
-  pinMode(STEPPER_A, OUTPUT);
-  pinMode(STEPPER_B, OUTPUT);
-  pinMode(STEPPER_C, OUTPUT);
-  pinMode(STEPPER_D, OUTPUT);
+  //pinMode(STEPPER_A, OUTPUT);
+  //pinMode(STEPPER_B, OUTPUT);
+  //pinMode(STEPPER_C, OUTPUT);
+  //pinMode(STEPPER_D, OUTPUT);
 
-  digitalWrite(POWER, HIGH);
-  digitalWrite(WIFI, LOW);
-  digitalWrite(EMPTY, HIGH);
+  leds[0] = CRGB(255, 0, 0);
+  FastLed.show();
+
+  FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
   Serial.begin(115200);
 
