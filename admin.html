@@ -257,49 +257,50 @@
     
 
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co"
-    const SUPABASE_KEY = "TVŮJ_SUPABASE_ANON_KEY"
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc"
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
     const emailEl = document.getElementById("email")
     const table = document.getElementById("userTable")
     const searchInput = document.getElementById("search")
+    const adminStatusEl = document.getElementById("admin_status");
 
     let users = []
     let currentAdmin = null
 
-    /* ===== OVĚŘENÍ ADMINA ===== */
+      /* ===== OVĚŘENÍ ADMINA ===== */
 
-    async function checkAdmin() {
+      async function loadAdmin() {
+    const { data: userData } = await supabaseClient.auth.getUser();
 
-      const { data: userData } = await supabaseClient.auth.getUser()
-
-      if (!userData.user) {
-        location.href = "index.html"
-        return
-      }
-
-      const email = userData.user.email
-      emailEl.textContent = email
-
-      const { data: dbUser } = await supabaseClient
-        .from("users")
-        .select("id, admin")
-        .eq("email", email)
-        .maybeSingle()
-
-      if (!dbUser || dbUser.admin !== true) {
-        alert("Nemáš oprávnění.")
-        location.href = "dashboard.html"
-        return
-      }
-
-      currentAdmin = dbUser
-
-      loadUsers()
-
+    if (!userData.user) {
+      window.location.href = "index.html";
+      return;
     }
 
+    const email = userData.user.email;
+    emailEl.textContent = email;
+
+    const { data: dbUser } = await supabaseClient
+      .from("users")
+      .select("id, admin")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (!dbUser || dbUser.admin !== true) {
+      alert("Nemáš oprávnění.");
+      window.location.href = "dashboard.html";
+      return;
+    }
+
+    currentAdmin = dbUser;
+
+    adminStatusEl.textContent = "ADMIN";
+    adminStatusEl.classList.add("admin-true");
+  }
+
+  loadAdmin();
     /* ===== NAČTENÍ UŽIVATELŮ ===== */
 
     async function loadUsers() {
