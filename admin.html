@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html lang="cs">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
-
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <style>
-
     body {
       margin: 0;
       font-family: 'Inter', system-ui, sans-serif;
       background: linear-gradient(135deg, #eef2ff, #dbeafe);
       color: #1e293b;
     }
-
     /* TOPBAR */
-
     .topbar {
       padding: 14px 20px;
       display: flex;
@@ -30,19 +23,16 @@
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(10px);
     }
-
     .top-left {
       display: flex;
       align-items: center;
       gap: 15px;
     }
-
     .topbar h1 {
       margin: 0;
       color: #2563eb;
       font-size: 1.4rem;
     }
-
     .admin-badge {
       padding: 4px 10px;
       border-radius: 999px;
@@ -51,7 +41,6 @@
       background: #fee2e2;
       color: #dc2626;
     }
-
     .topbar button {
       background: #e5e7eb;
       border: none;
@@ -59,16 +48,12 @@
       border-radius: 12px;
       cursor: pointer;
     }
-
     /* LAYOUT */
-
     .layout {
       display: flex;
       min-height: calc(100vh - 60px);
     }
-
     /* SIDEBAR */
-
     .sidebar {
       width: 220px;
       background: white;
@@ -78,7 +63,6 @@
       flex-direction: column;
       gap: 10px;
     }
-
     .menu-btn {
       padding: 12px;
       border: none;
@@ -88,55 +72,44 @@
       text-align: left;
       font-weight: 500;
     }
-
     .menu-btn.active {
       background: #2563eb;
       color: white;
     }
-
     /* CONTENT */
-
     .content {
       flex: 1;
       padding: 20px;
     }
-
     /* CARD */
-
     .card {
       background: white;
       border-radius: 20px;
       padding: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
-
     /* TABLE */
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
     }
-
     th,
     td {
       padding: 10px;
       text-align: left;
       border-bottom: 1px solid #e2e8f0;
     }
-
     th {
       font-size: .85rem;
       color: #64748b;
     }
-
     td input {
       width: 80px;
       padding: 6px;
       border-radius: 8px;
       border: 1px solid #cbd5f5;
     }
-
     td button {
       padding: 6px 10px;
       border: none;
@@ -145,9 +118,7 @@
       color: white;
       cursor: pointer;
     }
-
     /* SEARCH */
-
     .search {
       margin-bottom: 10px;
       width: 100%;
@@ -155,68 +126,47 @@
       border-radius: 10px;
       border: 1px solid #cbd5f5;
     }
-
     /* WIFI */
-
     .qr-box {
       display: flex;
       justify-content: center;
       margin-top: 20px;
     }
-
     /* MOBILE */
-
     @media (max-width: 800px) {
-
       .layout {
         flex-direction: column;
       }
-
       .sidebar {
         width: 100%;
         flex-direction: row;
         overflow: auto;
       }
-
       .menu-btn {
         flex: 1;
         text-align: center;
       }
-
     }
-
   </style>
 </head>
-
 <body>
-
   <div class="topbar">
-
     <div class="top-left">
       <h1>Admin Panel</h1>
       <span id="admin_status" class="admin-badge">ADMIN</span>
       <div id="email"></div>
     </div>
-
     <button onclick="location.href='dashboard.html'">← Zpět</button>
-
   </div>
-
   <div class="layout">
-
     <div class="sidebar">
       <button class="menu-btn active" id="menuUsers">Uživatelé</button>
       <button class="menu-btn" id="menuWifi">Wi-Fi QR</button>
     </div>
-
     <div class="content">
-
       <div id="usersPage" class="card">
-
         <input id="search" class="search" placeholder="Vyhledat uživatele...">
-
         <table>
-
           <thead>
             <tr>
               <th>Email</th>
@@ -225,207 +175,130 @@
               <th></th>
             </tr>
           </thead>
-
           <tbody id="userTable"></tbody>
-
         </table>
-
       </div>
-
       <div id="wifiPage" class="card" style="display:none">
-
         <h3>Wi-Fi QR generátor</h3>
-
         <label>SSID</label>
         <input id="ssid">
-
         <label>Heslo</label>
         <input id="password">
-
         <button id="generate" style="margin-top:10px">Vygenerovat QR</button>
-
         <div id="qr" class="qr-box"></div>
-
       </div>
-
     </div>
-
   </div>
-
   <script>
-
-    
-
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co"
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc"
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-
     const emailEl = document.getElementById("email")
     const table = document.getElementById("userTable")
     const searchInput = document.getElementById("search")
     const adminStatusEl = document.getElementById("admin_status");
-
     let users = []
     let currentAdmin = null
-
       /* ===== OVĚŘENÍ ADMINA ===== */
-
-      async function loadAdmin() {
-    const { data: userData } = await supabaseClient.auth.getUser();
-
-    if (!userData.user) {
-      window.location.href = "index.html";
-      return;
-    }
-
-    const email = userData.user.email;
-    emailEl.textContent = email;
-
-    const { data: dbUser } = await supabaseClient
-      .from("users")
-      .select("id, admin")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (!dbUser || dbUser.admin !== true) {
-      alert("Nemáš oprávnění.");
-      window.location.href = "dashboard.html";
-      return;
-    }
-
-    currentAdmin = dbUser;
-
-    adminStatusEl.textContent = "ADMIN";
-    adminStatusEl.classList.add("admin-true");
-  }
-
-  loadAdmin();
-    /* ===== NAČTENÍ UŽIVATELŮ ===== */
-
-    async function loadUsers() {
-
-      const { data, error } = await supabaseClient
-        .from("users")
-        .select("id,email,token_count")
-        .order("email")
-
-      if (error) return
-
-      users = data
-      renderTable(data)
-
-    }
-
-    /* ===== TABULKA ===== */
-
-    function renderTable(list) {
-
-      table.innerHTML = ""
-
-      list.forEach(user => {
-
-        const tr = document.createElement("tr")
-
-        tr.innerHTML = `
-          <td>${user.email}</td>
-          <td>${user.token_count || 0}</td>
-
-          <td>
-            <input type="number" min="1" id="add_${user.id}">
-          </td>
-
-          <td>
-            <button onclick="addTokens('${user.id}')">Přidat</button>
-          </td>
-        `
-
-        table.appendChild(tr)
-
-      })
-
-    }
-
-    /* ===== PŘIDÁNÍ TOKENŮ ===== */
-
-    async function addTokens(id) {
-
-      if (!currentAdmin) {
-        alert("Nejsi admin")
-        return
+    async function loadAdmin() {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if (!userData.user) {
+        window.location.href = "index.html";
+        return;
       }
-
-      const input = document.getElementById("add_" + id)
-      const amount = parseInt(input.value)
-
-      if (!amount || amount <= 0) return
-
-      const user = users.find(u => u.id === id)
-
-      const newTotal = (user.token_count || 0) + amount
-
-      await supabaseClient
+      const email = userData.user.email;
+      emailEl.textContent = email;
+      const { data: dbUser } = await supabaseClient
         .from("users")
-        .update({ token_count: newTotal })
-        .eq("id", id)
-
-      loadUsers()
-
+        .select("id, admin")
+        .eq("email", email)
+        .maybeSingle();
+      if (!dbUser || dbUser.admin !== true) {
+        alert("Nemáš oprávnění.");
+        window.location.href = "dashboard.html";
+        return;
+      }
+      currentAdmin = dbUser;
+      adminStatusEl.textContent = "ADMIN";
+      adminStatusEl.classList.add("admin-true");
     }
+  loadAdmin();
 
-    /* ===== SEARCH ===== */
-
-    searchInput.addEventListener("input", () => {
-
-      const q = searchInput.value.toLowerCase()
-
-      const filtered = users.filter(u =>
-        u.email.toLowerCase().includes(q)
-      )
-
-      renderTable(filtered)
-
+  function renderTable(list) {
+    table.innerHTML = ""
+    list.forEach(user => {
+      const tr = document.createElement("tr")
+      tr.innerHTML = `
+        <td>${user.email}</td>
+        <td>${user.token_count || 0}</td>
+        <td>
+          <input type="number" min="1" id="add_${user.id}">
+        </td>
+        <td>
+          <button onclick="addTokens('${user.id}')">Přidat</button>
+        </td>
+      `
+      table.appendChild(tr)
     })
-
-    /* ===== MENU SWITCH ===== */
-
-    const usersPage = document.getElementById("usersPage")
-    const wifiPage = document.getElementById("wifiPage")
-
-    document.getElementById("menuUsers").onclick = () => {
-      usersPage.style.display = "block"
-      wifiPage.style.display = "none"
-    }
-
-    document.getElementById("menuWifi").onclick = () => {
-      usersPage.style.display = "none"
-      wifiPage.style.display = "block"
-    }
-
-    /* ===== WIFI QR ===== */
-
-    document.getElementById("generate").onclick = () => {
-
-      const ssid = document.getElementById("ssid").value
-      const pass = document.getElementById("password").value
-
-      const qrData = ssid + "/" + pass
-
-      document.getElementById("qr").innerHTML = ""
-
-      QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
-        document.getElementById("qr").appendChild(canvas)
-      })
-
-    }
-
-    /* ===== START ===== */
-
-    checkAdmin()
-
-  </script>
-
+  }
+    /* ===== NAČTENÍ UŽIVATELŮ ===== */
+  async function loadUsers() {
+    const { data, error } = await supabaseClient
+      .from("users")
+      .select("id,email,token_count")
+      .order("email")
+    if (error) return
+    users = data
+    renderTable(data)
+  }
   
-
+  
+  /* ===== PŘIDÁNÍ TOKENŮ ===== */
+  async function addTokens(id) {
+    if (!currentAdmin) {
+      alert("Nejsi admin")
+      return
+    }
+    const input = document.getElementById("add_" + id)
+    const amount = parseInt(input.value)
+    if (!amount || amount <= 0) return
+    const user = users.find(u => u.id === id)
+    const newTotal = (user.token_count || 0) + amount
+    await supabaseClient
+      .from("users")
+      .update({ token_count: newTotal })
+      .eq("id", id)
+    loadUsers()
+  }
+    /* ===== SEARCH ===== */
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase()
+    const filtered = users.filter(u =>
+      u.email.toLowerCase().includes(q)
+    )
+    renderTable(filtered)
+  })
+  /* ===== MENU SWITCH ===== */
+  const usersPage = document.getElementById("usersPage")
+  const wifiPage = document.getElementById("wifiPage")
+  document.getElementById("menuUsers").onclick = () => {
+    usersPage.style.display = "block"
+    wifiPage.style.display = "none"
+  }
+  document.getElementById("menuWifi").onclick = () => {
+    usersPage.style.display = "none"
+    wifiPage.style.display = "block"
+  }
+  /* ===== WIFI QR ===== */
+  document.getElementById("generate").onclick = () => {
+    const ssid = document.getElementById("ssid").value
+    const pass = document.getElementById("password").value
+    const qrData = ssid + "/" + pass
+    document.getElementById("qr").innerHTML = ""
+    QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+      document.getElementById("qr").appendChild(canvas)
+    })
+  }
+  </script>
 </body>
 </html>
