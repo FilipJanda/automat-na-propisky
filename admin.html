@@ -254,6 +254,8 @@
 
   <script>
 
+    
+
     const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co"
     const SUPABASE_KEY = "TVŮJ_SUPABASE_ANON_KEY"
 
@@ -264,19 +266,41 @@
     const searchInput = document.getElementById("search")
 
     let users = []
+    let currentAdmin = null
 
-    async function loadAdmin() {
+    /* ===== OVĚŘENÍ ADMINA ===== */
 
-      const { data } = await supabaseClient.auth.getUser()
+    async function checkAdmin() {
 
-      if (!data.user) {
+      const { data: userData } = await supabaseClient.auth.getUser()
+
+      if (!userData.user) {
         location.href = "index.html"
         return
       }
 
-      emailEl.textContent = data.user.email
+      const email = userData.user.email
+      emailEl.textContent = email
+
+      const { data: dbUser } = await supabaseClient
+        .from("users")
+        .select("id, admin")
+        .eq("email", email)
+        .maybeSingle()
+
+      if (!dbUser || dbUser.admin !== true) {
+        alert("Nemáš oprávnění.")
+        location.href = "dashboard.html"
+        return
+      }
+
+      currentAdmin = dbUser
+
+      loadUsers()
 
     }
+
+    /* ===== NAČTENÍ UŽIVATELŮ ===== */
 
     async function loadUsers() {
 
@@ -292,6 +316,8 @@
 
     }
 
+    /* ===== TABULKA ===== */
+
     function renderTable(list) {
 
       table.innerHTML = ""
@@ -303,9 +329,11 @@
         tr.innerHTML = `
           <td>${user.email}</td>
           <td>${user.token_count || 0}</td>
+
           <td>
             <input type="number" min="1" id="add_${user.id}">
           </td>
+
           <td>
             <button onclick="addTokens('${user.id}')">Přidat</button>
           </td>
@@ -317,7 +345,14 @@
 
     }
 
+    /* ===== PŘIDÁNÍ TOKENŮ ===== */
+
     async function addTokens(id) {
+
+      if (!currentAdmin) {
+        alert("Nejsi admin")
+        return
+      }
 
       const input = document.getElementById("add_" + id)
       const amount = parseInt(input.value)
@@ -337,6 +372,8 @@
 
     }
 
+    /* ===== SEARCH ===== */
+
     searchInput.addEventListener("input", () => {
 
       const q = searchInput.value.toLowerCase()
@@ -348,6 +385,8 @@
       renderTable(filtered)
 
     })
+
+    /* ===== MENU SWITCH ===== */
 
     const usersPage = document.getElementById("usersPage")
     const wifiPage = document.getElementById("wifiPage")
@@ -361,6 +400,8 @@
       usersPage.style.display = "none"
       wifiPage.style.display = "block"
     }
+
+    /* ===== WIFI QR ===== */
 
     document.getElementById("generate").onclick = () => {
 
@@ -377,10 +418,13 @@
 
     }
 
-    loadAdmin()
-    loadUsers()
+    /* ===== START ===== */
+
+    checkAdmin()
 
   </script>
+
+  
 
 </body>
 </html>
