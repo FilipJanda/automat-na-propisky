@@ -1,369 +1,386 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin Panel</title>
-<link rel="icon" type="image/png" href="pics/pen.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  background: linear-gradient(135deg, #eef2ff, #dbeafe);
-  min-height: 100vh;
-  color: #1e293b;
-}
-
-.topbar {
-  padding: 14px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
-}
-
-.top-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.top-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.topbar h1 {
-  margin: 0;
-  color: #2563eb;
-  font-size: 1.5rem;
-}
-
-.topbar button {
-  background: #e5e7eb;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.container {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  max-width: 1000px;
-  margin: 20px auto;
-}
-
-.card {
-  background: white;;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  padding: 24px;
-  margin: 10px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-}
-
-.qr-box {
-  min-height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.error {
-      color: #dc2626;
-      text-align: center;
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #dbeafe);
+      color: #1e293b;
     }
 
-h2 {
-  margin: 0 0 10px 0;
-  font-size: 1.25rem;
-}
+    /* TOPBAR */
 
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-bottom: -8px;
-  margin-left: 4px;
-}
+    .topbar {
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+    }
 
-input {
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #cbd5f5;
-  font-size: 1rem;
-}
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
 
-button.primary {
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-}
+    .topbar h1 {
+      margin: 0;
+      color: #2563eb;
+      font-size: 1.4rem;
+    }
 
-button.primary:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-}
+    .admin-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 600;
+      background: #fee2e2;
+      color: #dc2626;
+    }
 
-.info {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #10b981;
-  min-height: 20px;
-}
+    .topbar button {
+      background: #e5e7eb;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
 
-.error {
-  color: #dc2626;
-  text-align: center;
-  font-size: 0.9rem;
-  min-height: 20px;
-}
+    /* LAYOUT */
 
-.admin-badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
 
-.admin-true {
-  background: #fee2e2;
-  color: #dc2626;
-}
+    /* SIDEBAR */
 
-@media (max-width: 600px) {
-  .container {
-    flex-direction: column;
-  }
-}
-</style>
+    .sidebar {
+      width: 220px;
+      background: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #f1f5f9;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .menu-btn.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    /* CONTENT */
+
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* CARD */
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    /* TABLE */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      font-size: .85rem;
+      color: #64748b;
+    }
+
+    td input {
+      width: 80px;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid #cbd5f5;
+    }
+
+    td button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* SEARCH */
+
+    .search {
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5f5;
+    }
+
+    /* WIFI */
+
+    .qr-box {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 800px) {
+
+      .layout {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow: auto;
+      }
+
+      .menu-btn {
+        flex: 1;
+        text-align: center;
+      }
+
+    }
+
+  </style>
 </head>
 
 <body>
 
-<div class="topbar">
-  <div class="top-left">
-    <h1>Admin Panel</h1>
-    <span id="admin_status" class="admin-badge"></span>
-    <div id="email">Načítám…</div>
-  </div>
+  <div class="topbar">
 
-  <div class="top-right">
+    <div class="top-left">
+      <h1>Admin Panel</h1>
+      <span id="admin_status" class="admin-badge">ADMIN</span>
+      <div id="email"></div>
+    </div>
+
     <button onclick="location.href='dashboard.html'">← Zpět</button>
-  </div>
-</div>
 
-<div class="container">
-
-  <!-- TOKENY -->
-  <div class="card">
-    <h2>Přidat tokeny uživateli</h2>
-
-    <label>Email uživatele
-      <input id="userEmail" type="email" list="userList" />
-      <datalist id="userList"></datalist>
-    </label>
-        
-
-    <label>Počet tokenů<input id="tokenAmount" type="number" min="1" /></label>
-    
-
-    <button class="primary" id="addTokens">Přidat tokeny</button>
-
-    <div id="userInfo" class="info"></div>
-    <div id="userError" class="error"></div>
   </div>
 
-  <!-- WIFI QR -->
-  <div class="card">
-    <h2>Wi-Fi QR generátor</h2>
+  <div class="layout">
 
-    <label>SSID<input id="ssid" type="text"/></label>
-   
+    <div class="sidebar">
+      <button class="menu-btn active" id="menuUsers">Uživatelé</button>
+      <button class="menu-btn" id="menuWifi">Wi-Fi QR</button>
+    </div>
 
-    <label>Heslo<input id="password" type="text" /></label>
-    
+    <div class="content">
 
-    <button class="primary" id="generate">Vygenerovat QR</button>
+      <div id="usersPage" class="card">
 
-    <div id="qr" class="qr-box"></div>
-    <div id="wifiError" class="error"></div>
+        <input id="search" class="search" placeholder="Vyhledat uživatele...">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Tokeny</th>
+              <th>Přidat</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody id="userTable"></tbody>
+
+        </table>
+
+      </div>
+
+      <div id="wifiPage" class="card" style="display:none">
+
+        <h3>Wi-Fi QR generátor</h3>
+
+        <label>SSID</label>
+        <input id="ssid">
+
+        <label>Heslo</label>
+        <input id="password">
+
+        <button id="generate" style="margin-top:10px">Vygenerovat QR</button>
+
+        <div id="qr" class="qr-box"></div>
+
+      </div>
+
+    </div>
+
   </div>
 
-</div>
+  <script>
 
+    const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co"
+    const SUPABASE_KEY = "TVŮJ_SUPABASE_ANON_KEY"
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script>
-const SUPABASE_URL = "https://pgdtypgzzdchqefcgcaz.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-const emailEl = document.getElementById("email");
-const adminStatusEl = document.getElementById("admin_status");
-const btnAdd = document.getElementById("addTokens");
+    const emailEl = document.getElementById("email")
+    const table = document.getElementById("userTable")
+    const searchInput = document.getElementById("search")
 
-let currentAdmin = null;
+    let users = []
 
-/* ===== NAČTENÍ + OVĚŘENÍ ADMINA ===== */
-async function loadAdmin() {
-  const { data: userData } = await supabaseClient.auth.getUser();
+    async function loadAdmin() {
 
-  if (!userData.user) {
-    window.location.href = "index.html";
-    return;
-  }
+      const { data } = await supabaseClient.auth.getUser()
 
-  const email = userData.user.email;
-  emailEl.textContent = email;
+      if (!data.user) {
+        location.href = "index.html"
+        return
+      }
 
-  const { data: dbUser } = await supabaseClient
-    .from("users")
-    .select("id, admin")
-    .eq("email", email)
-    .maybeSingle();
+      emailEl.textContent = data.user.email
 
-  if (!dbUser || dbUser.admin !== true) {
-    alert("Nemáš oprávnění.");
-    window.location.href = "dashboard.html";
-    return;
-  }
-
-  currentAdmin = dbUser;
-
-  adminStatusEl.textContent = "ADMIN";
-  adminStatusEl.classList.add("admin-true");
-}
-
-loadAdmin();
-
-async function loadUsers() {
-  const { data: users, error } = await supabaseClient
-    .from("users")
-    .select("email, token_count")
-    .order("email");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  const list = document.getElementById("userList");
-  list.innerHTML = "";
-
-  users.forEach(user => {
-    const option = document.createElement("option");
-    option.value = user.email;
-    option.label = `${user.email} (${user.token_count || 0} tokenů)`;
-    list.appendChild(option);
-  });
-}
-loadUsers();
-
-const errorEl = document.getElementById("userError");
-const qrBox = document.getElementById("qr");
-/* ===== PŘIDÁVÁNÍ TOKENŮ ===== */
-btnAdd.addEventListener("click", async () => {
-
-  if (!currentAdmin) {
-    alert("Nejsi admin.");
-    return;
-  }
-
-  const email = document.getElementById("userEmail").value.trim();
-  const amount = parseInt(document.getElementById("tokenAmount").value);
-  const infoEl = document.getElementById("userInfo");
- 
-
-  infoEl.textContent = "";
-  errorEl.textContent = "";
-
-  if (!email || !amount || amount <= 0) {
-    errorEl.textContent = "Zadej platný email a počet tokenů.";
-    return;
-  }
-
-  btnAdd.disabled = true;
-  btnAdd.textContent = "Pracuji...";
-
-  try {
-    const { data: targetUser } = await supabaseClient
-      .from("users")
-      .select("id, token_count")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (!targetUser) throw new Error("Uživatel nenalezen.");
-
-    const newTotal = (targetUser.token_count || 0) + amount;
-
-    const { error } = await supabaseClient
-      .from("users")
-      .update({ token_count: newTotal })
-      .eq("id", targetUser.id);
-
-    if (error) throw error;
-
-    infoEl.textContent = `Hotovo. Nový stav: ${newTotal}`;
-  } catch (err) {
-    errorEl.textContent = err.message;
-  }
-
-  btnAdd.disabled = false;
-  btnAdd.textContent = "Přidat tokeny";
-
-  loadUsers();
-});
-
-/******** QR GENERÁTOR ********/
-  document.getElementById("generate").addEventListener("click", () => {
-    wifiError.textContent = "";
-    qrBox.innerHTML = "";
-
-    const ssid = document.getElementById("ssid").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    if (!ssid || !password) {
-      wifiError.textContent = "Vyplň SSID i heslo.";
-      return;
     }
 
-    // 🔹 TEXTOVÝ QR: ssid/heslo
-    const qrData = ssid + "/" + password;
+    async function loadUsers() {
 
-    QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
-      if (err) {
-        wifiError.textContent = "Chyba při generování QR.";
-        return;
-      }
-      qrBox.appendChild(canvas);
-    });
-  });
-</script>
+      const { data, error } = await supabaseClient
+        .from("users")
+        .select("id,email,token_count")
+        .order("email")
+
+      if (error) return
+
+      users = data
+      renderTable(data)
+
+    }
+
+    function renderTable(list) {
+
+      table.innerHTML = ""
+
+      list.forEach(user => {
+
+        const tr = document.createElement("tr")
+
+        tr.innerHTML = `
+          <td>${user.email}</td>
+          <td>${user.token_count || 0}</td>
+          <td>
+            <input type="number" min="1" id="add_${user.id}">
+          </td>
+          <td>
+            <button onclick="addTokens('${user.id}')">Přidat</button>
+          </td>
+        `
+
+        table.appendChild(tr)
+
+      })
+
+    }
+
+    async function addTokens(id) {
+
+      const input = document.getElementById("add_" + id)
+      const amount = parseInt(input.value)
+
+      if (!amount || amount <= 0) return
+
+      const user = users.find(u => u.id === id)
+
+      const newTotal = (user.token_count || 0) + amount
+
+      await supabaseClient
+        .from("users")
+        .update({ token_count: newTotal })
+        .eq("id", id)
+
+      loadUsers()
+
+    }
+
+    searchInput.addEventListener("input", () => {
+
+      const q = searchInput.value.toLowerCase()
+
+      const filtered = users.filter(u =>
+        u.email.toLowerCase().includes(q)
+      )
+
+      renderTable(filtered)
+
+    })
+
+    const usersPage = document.getElementById("usersPage")
+    const wifiPage = document.getElementById("wifiPage")
+
+    document.getElementById("menuUsers").onclick = () => {
+      usersPage.style.display = "block"
+      wifiPage.style.display = "none"
+    }
+
+    document.getElementById("menuWifi").onclick = () => {
+      usersPage.style.display = "none"
+      wifiPage.style.display = "block"
+    }
+
+    document.getElementById("generate").onclick = () => {
+
+      const ssid = document.getElementById("ssid").value
+      const pass = document.getElementById("password").value
+
+      const qrData = ssid + "/" + pass
+
+      document.getElementById("qr").innerHTML = ""
+
+      QRCode.toCanvas(qrData, { width: 220 }, (err, canvas) => {
+        document.getElementById("qr").appendChild(canvas)
+      })
+
+    }
+
+    loadAdmin()
+    loadUsers()
+
+  </script>
 
 </body>
 </html>
