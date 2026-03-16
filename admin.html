@@ -239,6 +239,7 @@
         </td>
       `
       table.appendChild(tr)
+  
     })
   }
     /* ===== NAČTENÍ UŽIVATELŮ ===== */
@@ -262,13 +263,23 @@
     const input = document.getElementById("add_" + id)
     const amount = parseInt(input.value)
     if (!amount || amount <= 0) return
-    const user = users.find(u => u.id === id)
-    const newTotal = (user.token_count || 0) + amount
-    await supabaseClient
-      .from("users")
-      .update({ token_count: newTotal })
-      .eq("id", id)
+    const { error } = await supabaseClient.rpc("add_tokens", {
+		  p_id: id,
+		  p_amount: amount
+	  })
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
     loadUsers()
+    
+    const q = searchInput.value.toLowerCase()
+    const filtered = users.filter(u =>
+      u.email.toLowerCase().includes(q)
+    )
+    renderTable(filtered)
   }
 
   loadUsers()
