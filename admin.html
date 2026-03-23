@@ -133,6 +133,34 @@
       border: 1px solid #cbd5f5;
     }
     /* WIFI */
+    #wifiPage label,
+    #wifiPage input,
+    #wifiPage button,
+    #wifiPage .qr-box {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+    }
+    #wifiPage label {
+      margin-top: 16px;
+      font-weight: 600;
+    }
+    #wifiPage input {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5f5;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    #wifiPage button {
+      max-width: 240px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
     .qr-box {
       display: flex;
       justify-content: center;
@@ -152,6 +180,43 @@
         flex: 1;
         text-align: center;
       }
+      .content {
+        padding: 10px;
+      }
+      .card {
+        padding: 14px;
+      }
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+      tr {
+        margin-bottom: 12px;
+      }
+      th {
+        display: none;
+      }
+      td {
+        padding: 8px;
+        border: none;
+      }
+      td:not(:last-child) {
+        border-bottom: 1px solid #e2e8f0;
+      }
+      td input,
+      td button {
+        width: 100%;
+        margin-top: 6px;
+      }
+      td:nth-child(1)::before { content: "Email: "; font-weight: 600; }
+      td:nth-child(2)::before { content: "Tokeny: "; font-weight: 600; }
+      td:nth-child(3)::before { content: "Přidat: "; font-weight: 600; }
+      td:nth-child(4)::before { content: "Akce: "; font-weight: 600; }
+      td:nth-child(5)::before { content: "Status: "; font-weight: 600; }
     }
   </style>
 </head>
