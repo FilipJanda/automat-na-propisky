@@ -322,10 +322,14 @@
   document.getElementById("menuUsers").onclick = () => {
     usersPage.style.display = "block"
     wifiPage.style.display = "none"
+    document.getElementById("menuUsers").classList.add("active")
+    document.getElementById("menuWifi").classList.remove("active")
   }
   document.getElementById("menuWifi").onclick = () => {
     usersPage.style.display = "none"
     wifiPage.style.display = "block"
+    document.getElementById("menuWifi").classList.add("active")
+    document.getElementById("menuUsers").classList.remove("active")
   }
   /* ===== WIFI QR ===== */
   document.getElementById("generate").onclick = () => {
