@@ -118,6 +118,20 @@
       color: white;
       cursor: pointer;
     }
+    .token-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .token-count {
+      min-width: 40px;
+      font-weight: 700;
+    }
+    .status-text {
+      margin-top: 6px;
+      font-size: 0.9rem;
+    }
     .success {
       color: green;
     }
@@ -214,9 +228,6 @@
       }
       td:nth-child(1)::before { content: "Email: "; font-weight: 600; }
       td:nth-child(2)::before { content: "Tokeny: "; font-weight: 600; }
-      td:nth-child(3)::before { content: "Přidat: "; font-weight: 600; }
-      td:nth-child(4)::before { content: "Akce: "; font-weight: 600; }
-      td:nth-child(5)::before { content: "Status: "; font-weight: 600; }
     }
   </style>
 </head>
@@ -242,8 +253,6 @@
             <tr>
               <th>Email</th>
               <th>Tokeny</th>
-              <th>Přidat</th>
-              <th>Status</th>
             </tr>
           </thead>
           <tbody id="userTable"></tbody>
@@ -302,17 +311,16 @@
       tr.id = "row_" + user.id
       tr.innerHTML = `
         <td>${user.email}</td>
-        <td>${user.token_count || 0}</td>
         <td>
-          <input type="number" min="1" id="add_${user.id}">
+          <div class="token-action">
+            <span class="token-count">${user.token_count || 0}</span>
+            <input type="number" min="1" id="add_${user.id}">
+            <button id="btn_${user.id}" onclick="addTokens('${user.id}')">Přidat</button>
+          </div>
+          <div class="status-text" id="status_${user.id}"></div>
         </td>
-        <td>
-          <button id="btn_${user.id}" onclick="addTokens('${user.id}')">Přidat</button>
-        </td>
-        <td id="status_${user.id}"></td>
       `
       table.appendChild(tr)
-  
     })
   }
     /* ===== NAČTENÍ UŽIVATELŮ ===== */
@@ -339,7 +347,7 @@
     const statusEl = document.getElementById("status_" + id)
     const btnEl = document.getElementById("btn_" + id)
     const tr = document.getElementById("row_" + id)
-    const tokenTd = tr.children[1]
+    const tokenCountEl = tr.querySelector(".token-count")
     const { error } = await supabaseClient.rpc("add_tokens", {
 		  p_id: id,
 		  p_amount: amount
@@ -358,8 +366,8 @@
     statusEl.textContent = "Tokeny přidány"
     statusEl.className = "success"
     // Update token count in DOM
-    const currentTokens = parseInt(tokenTd.textContent)
-    tokenTd.textContent = currentTokens + amount
+    const currentTokens = parseInt(tokenCountEl.textContent)
+    tokenCountEl.textContent = currentTokens + amount
     // Update in users array
     const user = users.find(u => u.id === id)
     if (user) user.token_count = (user.token_count || 0) + amount
