@@ -298,6 +298,12 @@
     // Update in users array
     const user = users.find(u => u.id === id)
     if (user) user.token_count = (user.token_count || 0) + amount
+    // Reset after 5 seconds
+    setTimeout(() => {
+      btnEl.style.display = ""
+      statusEl.textContent = ""
+      statusEl.className = ""
+    }, 5000)
   }
 
   loadUsers()
