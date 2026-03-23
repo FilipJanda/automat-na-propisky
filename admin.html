@@ -118,6 +118,12 @@
       color: white;
       cursor: pointer;
     }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
     /* SEARCH */
     .search {
       margin-bottom: 10px;
@@ -172,7 +178,7 @@
               <th>Email</th>
               <th>Tokeny</th>
               <th>Přidat</th>
-              <th></th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody id="userTable"></tbody>
@@ -228,6 +234,7 @@
     table.innerHTML = ""
     list.forEach(user => {
       const tr = document.createElement("tr")
+      tr.id = "row_" + user.id
       tr.innerHTML = `
         <td>${user.email}</td>
         <td>${user.token_count || 0}</td>
@@ -235,8 +242,9 @@
           <input type="number" min="1" id="add_${user.id}">
         </td>
         <td>
-          <button onclick="addTokens('${user.id}')">Přidat</button>
+          <button id="btn_${user.id}" onclick="addTokens('${user.id}')">Přidat</button>
         </td>
+        <td id="status_${user.id}"></td>
       `
       table.appendChild(tr)
   
@@ -263,6 +271,10 @@
     const input = document.getElementById("add_" + id)
     const amount = parseInt(input.value)
     if (!amount || amount <= 0) return
+    const statusEl = document.getElementById("status_" + id)
+    const btnEl = document.getElementById("btn_" + id)
+    const tr = document.getElementById("row_" + id)
+    const tokenTd = tr.children[1]
     const { error } = await supabaseClient.rpc("add_tokens", {
 		  p_id: id,
 		  p_amount: amount
@@ -270,16 +282,22 @@
 
     if (error) {
       console.error(error)
+      statusEl.textContent = "Chyba: " + error.message
+      statusEl.className = "error"
       return
     }
 
-    loadUsers()
-    
-    const q = searchInput.value.toLowerCase()
-    const filtered = users.filter(u =>
-      u.email.toLowerCase().includes(q)
-    )
-    renderTable(filtered)
+    // Success
+    btnEl.style.display = "none"
+    input.value = ""
+    statusEl.textContent = "Tokeny přidány"
+    statusEl.className = "success"
+    // Update token count in DOM
+    const currentTokens = parseInt(tokenTd.textContent)
+    tokenTd.textContent = currentTokens + amount
+    // Update in users array
+    const user = users.find(u => u.id === id)
+    if (user) user.token_count = (user.token_count || 0) + amount
   }
 
   loadUsers()
