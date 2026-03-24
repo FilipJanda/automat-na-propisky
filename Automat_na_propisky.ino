@@ -1,23 +1,25 @@
 #include <WiFi.h>
 #include <Preferences.h>
 #include <HTTPClient.h>
-//#include <Arduino_JSON.h>
-//#include <string.h>
 #include <ESP32QRCodeReader.h>
+#define FASTLED_RMT_BUILTIN_DRIVER 1
 #include <FastLED.h>
+#include <ArduinoOTA.h>
 
-//indicator pins
-// 1 seems to be unusable
-#define POWER 1
-#define WIFI 3
-// 0 has inverted logic due to hardware limitations
-#define EMPTY 0
-
-#define NUM_LEDS 10
-#define DATA_PIN 16
+#define FASTLED_ALLOW_INTERRUPTS 1
+#define NUM_LEDS 1
+#define DATA_PIN 0
+CRGB leds[NUM_LEDS];
+enum ledState {
+  OPERATIONAL,
+  GOOD,
+  ERROR,
+  WAITING,
+  OFF
+};
 
 #define IR 12
-#define IR_THRESHOLD 3000
+#define IR_THRESHOLD 1500
 
 //pins for stepper
 #define STEPPER_A 2
@@ -25,9 +27,9 @@
 #define STEPPER_C 15
 #define STEPPER_D 13
 
-#define QR_SCAN_DELAY 100
+//#define QR_SCAN_DELAY 100
 
-CRGB leds[NUM_LEDS];
+#define MAX_WIFI_RETRIES 5
 
 const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
 const char* url_finish = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/finish_transaction";
@@ -61,8 +63,6 @@ bool connectWiFi(String ssid, String password) {
   preferences.begin("WiFiCredentials", false);
   preferences.putString("ssid", ssid);
   preferences.putString("password", password);
-
-  digitalWrite(WIFI, HIGH);
   return true;
 }
 
@@ -95,7 +95,6 @@ bool connectWiFi() {
     }
   }
   
-  digitalWrite(WIFI, HIGH);
   return true;
 }
 
@@ -166,7 +165,8 @@ bool dispense() {
   {
     stepperMove();
     
-    if (analogRead(IR) > IR_THRESHOLD)
+    Serial.println(analogRead(IR));
+    if (analogRead(IR) < IR_THRESHOLD)
     {
       return true;
     }
@@ -214,10 +214,11 @@ bool DBFinishTransaction(char* transaction_id, char* success) {
 void scanQR(char* param1, char* param2) {
   while (true) 
   {
-    if (reader.receiveQrCode(&qrCodeData, 100) && qrCodeData.valid) 
-    {
-      blinkLED(0);
+    ArduinoOTA.handle();
+    LEDstatus(OPERATIONAL);
 
+    if (reader.receiveQrCode(&qrCodeData, 1000) && qrCodeData.valid) 
+    {
       char* payload = (char*)qrCodeData.payload;
       char* pch = strtok(payload, "/");
 
@@ -242,38 +243,80 @@ void scanQR(char* param1, char* param2) {
         Serial.println("Invalid QR data");
       }
 
-      return;
+      break;
     }
     
-    delay(QR_SCAN_DELAY);
+    //delay(QR_SCAN_DELAY);
   }
 }
 
-void blinkLED(int pin) {
-  for (int i = 0; i < 3; i++)
+void LEDstatus(enum ledState s) {
+  switch(s)
   {
-    digitalWrite(pin, LOW);
-    delay(100);
-    digitalWrite(pin, HIGH);
-    delay(100);
+    case OPERATIONAL:
+      leds[0] = CRGB(0, 0, 255);
+      break;
+
+    case GOOD:
+      leds[0] = CRGB(0, 255, 0);
+      break;
+
+    case ERROR:
+      leds[0] = CRGB(255, 0, 0);
+      break;
+
+    case WAITING:
+      leds[0] = CRGB(255, 255, 0);
+      break;
+
+    case OFF:
+      leds[0] = CRGB(255, 255, 0);
+      break;
   }
+  
+  FastLED.show();
+}
+
+void setupOTA() {
+  ArduinoOTA.setHostname("esp32-dispenser");
+  ArduinoOTA.setPassword("1234");
+
+  ArduinoOTA.onStart([]() {
+    Serial.println("OTA Start");
+  });
+
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA End");
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("OTA Progress: %u%%\r", (progress * 100) / total);
+  });
+
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("OTA Error[%u]: ", error);
+    LEDstatus(ERROR);
+
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+
+  ArduinoOTA.begin();
+  Serial.println("OTA Ready");
 }
 
 void setup() {
-  //pinMode(POWER, OUTPUT);
-  //pinMode(WIFI, OUTPUT);
-  //pinMode(EMPTY, OUTPUT);
-  //pinMode(IR, INPUT);
-
-  //pinMode(STEPPER_A, OUTPUT);
-  //pinMode(STEPPER_B, OUTPUT);
-  //pinMode(STEPPER_C, OUTPUT);
-  //pinMode(STEPPER_D, OUTPUT);
-
-  leds[0] = CRGB(255, 0, 0);
-  FastLed.show();
+  pinMode(STEPPER_A, OUTPUT);
+  pinMode(STEPPER_B, OUTPUT);
+  pinMode(STEPPER_C, OUTPUT);
+  pinMode(STEPPER_D, OUTPUT);
 
   FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.setBrightness(20);
+  LEDstatus(ledState::WAITING);
 
   Serial.begin(115200);
 
@@ -284,33 +327,35 @@ void setup() {
   {
     //Credentials are stored
     Serial.println("WiFi connected");
+    LEDstatus(ledState::OPERATIONAL);
+    setupOTA();
   }
-  else
+  else //Credentials missing or incorrect, acquire now
   {
-    //Credentials missing or incorrect, acquire now
-    Serial.println("Scanning for WiFi credentials...");    
-    char ssid[64];
-    char password[64];
-    scanQR(ssid, password);
+    for (int i = 0; i < MAX_WIFI_RETRIES; i++)
+    {
+      Serial.println("Scanning for WiFi credentials...");    
+      char ssid[64];
+      char password[64];
+      scanQR(ssid, password);
 
-    if (connectWiFi(ssid, password))
-    {
-      Serial.println("WiFi connected");
-    }
-    else
-    {
-      Serial.println("WiFi failed");
-      //replace infinite loop with something that doesnt block forever and indicates issues even without serial
-      while (true)
+      if (connectWiFi(ssid, password))
       {
-        delay(1000);
+        Serial.println("WiFi connected");
+        LEDstatus(ledState::OPERATIONAL);
+        setupOTA();
+        return;
       }
+
+      LEDstatus(ledState::ERROR);
     }
   }
 }
 
 void loop() {
-  Serial.println("Scan QR");
+  LEDstatus(ledState::OPERATIONAL);
+
+  ArduinoOTA.handle();
 
   char uid[64];
   char temporary_key[64];
@@ -322,23 +367,37 @@ void loop() {
 
   if(!infoOK)
   {
-    //blinkLED(POWER);
-    //digitalWrite(POWER, HIGH);
+    LEDstatus(ledState::ERROR);
     return;
   }
+
+  LEDstatus(ledState::GOOD);
 
   bool dispenseOK = dispense();
 
   bool proceed;
 
   if(!dispenseOK)
+  {
     proceed = DBFinishTransaction(transaction_id, "false"); // Should always return false
+    LEDstatus(ledState::ERROR);
+  }
   else
+  {
     proceed = DBFinishTransaction(transaction_id, "true"); // Returns false if inventory runs out or machine manually set to inoperational
+  }
 
   if (!proceed)
   {
     // implement waiting for fix of problem, should read the status from the database i guess?
-    while(true) { }
+    while(true) 
+    { 
+      LEDstatus(ledState::ERROR);
+      delay(500);
+      LEDstatus(ledState::OFF);
+      delay(500);
+
+      ArduinoOTA.handle();
+    }
   }
 }
