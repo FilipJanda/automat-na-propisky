@@ -2,14 +2,14 @@
 #include <Preferences.h>
 #include <HTTPClient.h>
 #include <ESP32QRCodeReader.h>
-#define FASTLED_RMT_BUILTIN_DRIVER 1
-#include <FastLED.h>
-#include <ArduinoOTA.h>
+#include <NeoPixelBus.h>
+//#include <ArduinoOTA.h>
 
-#define FASTLED_ALLOW_INTERRUPTS 1
-#define NUM_LEDS 1
-#define DATA_PIN 0
-CRGB leds[NUM_LEDS];
+const uint16_t PixelCount = 1;
+const uint8_t PixelPin = 0;
+
+NeoPixelBus<NeoGrbFeature, NeoWs2812xMethod> LED(PixelCount, PixelPin);
+
 enum ledState {
   OPERATIONAL,
   GOOD,
@@ -43,6 +43,7 @@ HTTPClient http;
 
 //new credentials
 bool connectWiFi(String ssid, String password) {
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   
   int timeout = 60000;
@@ -79,6 +80,7 @@ bool connectWiFi() {
     return false;
   }
 
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   
   int timeout = 60000;
@@ -214,7 +216,7 @@ bool DBFinishTransaction(char* transaction_id, char* success) {
 void scanQR(char* param1, char* param2) {
   while (true) 
   {
-    ArduinoOTA.handle();
+    //ArduinoOTA.handle();
     LEDstatus(OPERATIONAL);
 
     if (reader.receiveQrCode(&qrCodeData, 1000) && qrCodeData.valid) 
@@ -254,29 +256,30 @@ void LEDstatus(enum ledState s) {
   switch(s)
   {
     case OPERATIONAL:
-      leds[0] = CRGB(0, 0, 255);
+      LED.SetPixelColor(0, RgbColor(0, 0, 255));
       break;
 
     case GOOD:
-      leds[0] = CRGB(0, 255, 0);
+      LED.SetPixelColor(0, RgbColor(0, 255, 0));
       break;
 
     case ERROR:
-      leds[0] = CRGB(255, 0, 0);
+      LED.SetPixelColor(0, RgbColor(255, 0, 0));
       break;
 
     case WAITING:
-      leds[0] = CRGB(255, 255, 0);
+      LED.SetPixelColor(0, RgbColor(255, 255, 0));
       break;
 
     case OFF:
-      leds[0] = CRGB(255, 255, 0);
+      LED.SetPixelColor(0, RgbColor(0, 0, 0));
       break;
   }
   
-  FastLED.show();
+  LED.Show();
 }
 
+/*
 void setupOTA() {
   ArduinoOTA.setHostname("esp32-dispenser");
   ArduinoOTA.setPassword("1234");
@@ -307,28 +310,27 @@ void setupOTA() {
   ArduinoOTA.begin();
   Serial.println("OTA Ready");
 }
+*/
 
 void setup() {
+  LED.Begin();
+  LED.Show();
+  LEDstatus(ledState::WAITING);
+
   pinMode(STEPPER_A, OUTPUT);
   pinMode(STEPPER_B, OUTPUT);
   pinMode(STEPPER_C, OUTPUT);
   pinMode(STEPPER_D, OUTPUT);
 
-  FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
-  FastLED.setBrightness(20);
-  LEDstatus(ledState::WAITING);
-
   Serial.begin(115200);
 
   reader.setup();
-  reader.begin();
 
   if (connectWiFi())
   {
     //Credentials are stored
     Serial.println("WiFi connected");
     LEDstatus(ledState::OPERATIONAL);
-    setupOTA();
   }
   else //Credentials missing or incorrect, acquire now
   {
@@ -343,7 +345,7 @@ void setup() {
       {
         Serial.println("WiFi connected");
         LEDstatus(ledState::OPERATIONAL);
-        setupOTA();
+        //setupOTA();
         return;
       }
 
@@ -355,12 +357,14 @@ void setup() {
 void loop() {
   LEDstatus(ledState::OPERATIONAL);
 
-  ArduinoOTA.handle();
+  //ArduinoOTA.handle();
 
   char uid[64];
   char temporary_key[64];
   xQueueReset(reader.qrCodeQueue);
+  reader.begin();
   scanQR(uid, temporary_key); // QR scan is blocking
+  reader.end();
 
   char transaction_id[64];
   bool infoOK = DBProcessTransaction(uid, temporary_key, transaction_id);
@@ -373,7 +377,9 @@ void loop() {
 
   LEDstatus(ledState::GOOD);
 
+  WiFi.mode(WIFI_OFF);
   bool dispenseOK = dispense();
+  connectWiFi();
 
   bool proceed;
 
@@ -397,7 +403,7 @@ void loop() {
       LEDstatus(ledState::OFF);
       delay(500);
 
-      ArduinoOTA.handle();
+      //ArduinoOTA.handle();
     }
   }
 }
