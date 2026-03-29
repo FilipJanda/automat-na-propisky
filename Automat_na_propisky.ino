@@ -27,19 +27,11 @@ enum ledState {
 #define STEPPER_C 15
 #define STEPPER_D 13
 
-//#define QR_SCAN_DELAY 100
-
-#define MAX_WIFI_RETRIES 5
+#define MAX_QR_RETRIES 5
 
 const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
 const char* url_finish = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/finish_transaction";
-//should be anon key
-const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";
-
-ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
-struct QRCodeData qrCodeData;
-
-HTTPClient http;
+const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc"; //should be anon key
 
 //new credentials
 bool connectWiFi(String ssid, String password) {
@@ -181,6 +173,7 @@ bool DBProcessTransaction(char* uid, char* temporary_key, char* transaction_id) 
   char jsonBody[256];
   snprintf(jsonBody, sizeof(jsonBody), "{\"user_id\":%s,\"temporary_key\":\"%s\",\"machine_id\":%llu}", uid, temporary_key, ESP.getEfuseMac());
   Serial.println(jsonBody);
+  HTTPClient http;
   http.begin(url_process);
   http.addHeader("Authorization", String("Bearer ") + supabaseKey);
   int httpResponseCode = http.POST(jsonBody);
@@ -204,21 +197,25 @@ bool DBFinishTransaction(char* transaction_id, char* success) {
   char jsonBody[128];
   snprintf(jsonBody, sizeof(jsonBody), "{\"transaction_id\":%s,\"success\":\"%s\"}", transaction_id, success);
   Serial.println(jsonBody);
+  HTTPClient http;
   http.begin(url_finish);
   http.addHeader("Authorization", String("Bearer ") + supabaseKey);
   int httpResponseCode = http.POST(jsonBody);
   http.end();
 
   if (httpResponseCode == 200) return true;
+
+  Serial.println(httpResponseCode);
   return false;
 }
 
-void scanQR(char* param1, char* param2) {
+void scanQR(char* param1, char* param2, ESP32QRCodeReader reader) {
   while (true) 
   {
     //ArduinoOTA.handle();
     LEDstatus(OPERATIONAL);
 
+    struct QRCodeData qrCodeData;
     if (reader.receiveQrCode(&qrCodeData, 1000) && qrCodeData.valid) 
     {
       char* payload = (char*)qrCodeData.payload;
@@ -247,8 +244,6 @@ void scanQR(char* param1, char* param2) {
 
       break;
     }
-    
-    //delay(QR_SCAN_DELAY);
   }
 }
 
@@ -321,10 +316,9 @@ void setup() {
   pinMode(STEPPER_B, OUTPUT);
   pinMode(STEPPER_C, OUTPUT);
   pinMode(STEPPER_D, OUTPUT);
+  pinMode(33, OUTPUT);
 
   Serial.begin(115200);
-
-  reader.setup();
 
   if (connectWiFi())
   {
@@ -334,12 +328,13 @@ void setup() {
   }
   else //Credentials missing or incorrect, acquire now
   {
-    for (int i = 0; i < MAX_WIFI_RETRIES; i++)
+    for (int i = 0; i < MAX_QR_RETRIES; i++)
     {
       Serial.println("Scanning for WiFi credentials...");    
       char ssid[64];
       char password[64];
-      scanQR(ssid, password);
+      ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
+      scanQR(ssid, password, reader);
 
       if (connectWiFi(ssid, password))
       {
@@ -359,11 +354,17 @@ void loop() {
 
   //ArduinoOTA.handle();
 
+  Serial.println("Scan QR");
+
+  //xQueueReset(reader.qrCodeQueue);
+  ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
+  reader.setup();
+  reader.begin();
+
   char uid[64];
   char temporary_key[64];
-  xQueueReset(reader.qrCodeQueue);
-  reader.begin();
-  scanQR(uid, temporary_key); // QR scan is blocking
+  scanQR(uid, temporary_key, reader);
+
   reader.end();
 
   char transaction_id[64];
@@ -377,9 +378,13 @@ void loop() {
 
   LEDstatus(ledState::GOOD);
 
+  WiFi.disconnect();
   WiFi.mode(WIFI_OFF);
   bool dispenseOK = dispense();
-  connectWiFi();
+  if(connectWiFi()) Serial.println("Reconnect successful");
+  delay(10000);
+  Serial.println(WiFi.status());
+  Serial.println(WiFi.localIP());
 
   bool proceed;
 
@@ -393,14 +398,18 @@ void loop() {
     proceed = DBFinishTransaction(transaction_id, "true"); // Returns false if inventory runs out or machine manually set to inoperational
   }
 
+  Serial.println(proceed);
+
   if (!proceed)
   {
     // implement waiting for fix of problem, should read the status from the database i guess?
     while(true) 
     { 
       LEDstatus(ledState::ERROR);
+
+      digitalWrite(33, HIGH);
       delay(500);
-      LEDstatus(ledState::OFF);
+      digitalWrite(33, LOW);
       delay(500);
 
       //ArduinoOTA.handle();
