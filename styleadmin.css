@@ -1,0 +1,233 @@
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #dbeafe);
+    color: #1e293b;
+}
+    /* TOPBAR */
+.topbar {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+}
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.topbar h1 {
+    margin: 0;
+    color: #2563eb;
+    font-size: 1.4rem;
+}
+.admin-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 600;
+    background: #fee2e2;
+    color: #dc2626;
+}
+.topbar button {
+    background: #e5e7eb;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+/* LAYOUT */
+.layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.menu-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: #f1f5f9;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 500;
+}
+.menu-btn.active {
+    background: #2563eb;
+    color: white;
+}
+/* CONTENT */
+.content {
+    flex: 1;
+    padding: 20px;
+}
+/* CARD */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+th,
+td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+th {
+    font-size: .85rem;
+    color: #64748b;
+}
+td input {
+    width: 80px;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid #cbd5f5;
+}
+td button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+.token-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.token-count {
+    min-width: 40px;
+    font-weight: 700;
+}
+.status-text {
+    margin-top: 6px;
+    font-size: 0.9rem;
+}
+.success {
+    color: green;
+}
+.error {
+    color: red;
+}
+/* SEARCH */
+.search {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #cbd5f5;
+}
+/* WIFI */
+#wifiPage label,
+#wifiPage input,
+#wifiPage button,
+#wifiPage .qr-box {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+}
+#wifiPage label {
+    margin-top: 16px;
+    font-weight: 600;
+}
+#wifiPage input {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5f5;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+#wifiPage button {
+    max-width: 240px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+.qr-box {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+/* MOBILE */
+@media (max-width: 800px) {
+    .layout {
+        flex-direction: column;
+    }
+    .topbar {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+    }
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow: auto;
+    }
+    .search {
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #cbd5f5;
+    }
+    .menu-btn {
+        flex: 1;
+        text-align: center;
+    }
+    .content {
+        width: 100%;
+        padding: 10px;
+    }
+    .card {
+        width: 100%;
+        padding: 14px;
+    }
+    table,thead,tbody,th,td,tr {
+        display: block;
+    }
+    tr {
+        margin-bottom: 12px;
+    }
+    th {
+        display: none;
+    }
+    td {
+        padding: 8px;
+        border: none;
+    }
+    td:not(:last-child) {
+        border-bottom: 1px solid #e2e8f0;
+    }
+    td input,
+    td button {
+        width: 100%;
+        margin-top: 6px;
+    }
+    td:nth-child(1)::before { content: "Email: "; font-weight: 600; }
+    td:nth-child(2)::before { content: "Tokeny: "; font-weight: 600; }
