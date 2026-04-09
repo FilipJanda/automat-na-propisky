@@ -60,7 +60,6 @@ main {
 
 .image-placeholder {
     margin-top: 16px;
-    height: 180px;
     border-radius: 14px;
     background: repeating-linear-gradient(
     45deg,
@@ -69,11 +68,17 @@ main {
     #f1f5f9 10px,
     #f1f5f9 20px
     );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    font-size: 0.9rem;
+    display: block;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.image-placeholder img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 14px;
+    object-fit: cover;
 }
 
 /* ===== FOOTER ===== */
