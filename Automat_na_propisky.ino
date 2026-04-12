@@ -19,7 +19,7 @@ enum ledState {
 };
 
 #define IR 12
-#define IR_THRESHOLD 1500
+#define IR_THRESHOLD 300
 
 ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
 #define SCAN_INTERVAL 1000
@@ -30,6 +30,7 @@ ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
 #define STEPPER_C 14
 #define STEPPER_D 2
 
+#define FLASH 4
 #define MAX_QR_RETRIES 5
 
 const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
@@ -96,61 +97,67 @@ bool connectWiFi() {
 }
 
 void stepperMove() {
-  //krok 1
+  //step 1
   digitalWrite(STEPPER_A, HIGH); 
   digitalWrite(STEPPER_B, LOW); 
   digitalWrite(STEPPER_C, LOW); 
   digitalWrite(STEPPER_D, LOW); 
   delay(1);
 
-  //krok 2
+  //step 2
   digitalWrite(STEPPER_A, HIGH); 
   digitalWrite(STEPPER_B, HIGH); 
   digitalWrite(STEPPER_C, LOW); 
   digitalWrite(STEPPER_D, LOW); 
   delay(1);
 
-  //krok 3
+  //step 3
   digitalWrite(STEPPER_A, LOW); 
   digitalWrite(STEPPER_B, HIGH); 
   digitalWrite(STEPPER_C, LOW); 
   digitalWrite(STEPPER_D, LOW); 
   delay(1);
 
-  //krok 4
+  //step 4
   digitalWrite(STEPPER_A, LOW); 
   digitalWrite(STEPPER_B, HIGH); 
   digitalWrite(STEPPER_C, HIGH); 
   digitalWrite(STEPPER_D, LOW); 
   delay(1);
 
-  //krok 5
+  //step 5
   digitalWrite(STEPPER_A, LOW); 
   digitalWrite(STEPPER_B, LOW);
   digitalWrite(STEPPER_C, HIGH); 
   digitalWrite(STEPPER_D, LOW); 
   delay(1);
 
-  //krok 6
+  //step 6
   digitalWrite(STEPPER_A, LOW); 
   digitalWrite(STEPPER_B, LOW);
   digitalWrite(STEPPER_C, HIGH);
   digitalWrite(STEPPER_D, HIGH); 
   delay(1);
 
-  //krok 7
+  //step 7
   digitalWrite(STEPPER_A, LOW); 
   digitalWrite(STEPPER_B, LOW); 
   digitalWrite(STEPPER_C, LOW); 
   digitalWrite(STEPPER_D, HIGH); 
   delay(1);
 
-  //krok 8
+  //step 8
   digitalWrite(STEPPER_A, HIGH); 
   digitalWrite(STEPPER_B, LOW); 
   digitalWrite(STEPPER_C, LOW); 
   digitalWrite(STEPPER_D, HIGH); 
   delay(1);
+
+  //coils off
+  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_B, LOW); 
+  digitalWrite(STEPPER_C, LOW); 
+  digitalWrite(STEPPER_D, LOW); 
 }
 
 bool dispense() {
@@ -163,14 +170,13 @@ bool dispense() {
     stepperMove();
     
     Serial.println(analogRead(IR));
-    // if (analogRead(IR) < IR_THRESHOLD)
-    // {
-    //   return true;
-    // }
+    if (analogRead(IR) < IR_THRESHOLD)
+    {
+      return true;
+    }
   }
 
-  // return false;
-  return true;
+  return false;
 }
 
 bool DBProcessTransaction(char* uid, char* temporary_key, char* transaction_id) {
@@ -213,6 +219,48 @@ bool DBFinishTransaction(char* transaction_id, char* success) {
   return false;
 }
 
+bool DBIsOperational() {
+  char url[128];
+  snprintf(
+    url,
+    sizeof(url),
+    "https://your-project-id.supabase.co/rest/v1/machines?id=eq.%s&select=is_operational",
+    ESP.getEfuseMac()
+  );
+  Serial.println(url);
+
+  HTTPClient http;
+  http.begin(url);
+  http.addHeader("apikey", supabaseKey);
+  http.addHeader("Authorization", String("Bearer ") + supabaseKey);
+  int httpResponseCode = http.GET();
+
+  if (httpResponseCode != 200) return false;
+
+  String body = http.getString();
+  http.end();
+  Serial.println(body);
+}
+
+void waitForFix(){
+  LEDstatus(ledState::ERROR);
+
+  while(true) 
+  { 
+    for (int interval = 0; interval < 20000; interval += 1000)
+    {
+      digitalWrite(33, LOW);
+      delay(500);
+      digitalWrite(33, HIGH);
+      delay(500);
+    }
+
+    if(DBIsOperational()) break;
+  }
+
+  Serial.println("Issue fixed");
+}
+
 void reclaimPins() {
   gpio_reset_pin((gpio_num_t)13);
   gpio_reset_pin((gpio_num_t)14);
@@ -236,6 +284,11 @@ void scanQR(char* param1, char* param2) {
     struct QRCodeData qrCodeData;
     if (reader.receiveQrCode(&qrCodeData, SCAN_INTERVAL) && qrCodeData.valid) 
     {
+      // display success to user
+      analogWrite(FLASH, 20);
+      delay(200);
+      analogWrite(FLASH, LOW);
+
       char* payload = (char*)qrCodeData.payload;
       char* pch = strtok(payload, "/");
 
@@ -305,6 +358,7 @@ void setup() {
   pinMode(STEPPER_B, OUTPUT);
   pinMode(STEPPER_C, OUTPUT);
   pinMode(STEPPER_D, OUTPUT);
+  pinMode(FLASH, OUTPUT);
   pinMode(33, OUTPUT);
 
   Serial.begin(115200);
@@ -337,6 +391,8 @@ void setup() {
       LEDstatus(ledState::ERROR);
     }
   }
+
+  if(!DBIsOperational()) waitForFix();
 }
 
 void loop() {
@@ -377,17 +433,6 @@ void loop() {
 
   if (!proceed)
   {
-    // implement waiting for fix of problem, should read the status from the database i guess?
-    while(true) 
-    { 
-      LEDstatus(ledState::ERROR);
-
-      digitalWrite(33, HIGH);
-      delay(500);
-      digitalWrite(33, LOW);
-      delay(500);
-
-      //ArduinoOTA.handle();
-    }
+    waitForFix();
   }
 }
