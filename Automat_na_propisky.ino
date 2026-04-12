@@ -386,11 +386,12 @@ void setup() {
       {
         Serial.println("WiFi connected");
         LEDstatus(ledState::OPERATIONAL);
-        //setupOTA();
         return;
       }
 
       LEDstatus(ledState::ERROR);
+
+      while(true);
     }
   }
 
