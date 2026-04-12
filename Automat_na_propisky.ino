@@ -3,7 +3,6 @@
 #include <HTTPClient.h>
 #include <ESP32QRCodeReader.h>
 #include <NeoPixelBus.h>
-//#include <ArduinoOTA.h>
 
 const uint16_t PixelCount = 1;
 const uint8_t PixelPin = 0;
