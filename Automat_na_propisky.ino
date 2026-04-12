@@ -224,7 +224,7 @@ bool DBIsOperational() {
   snprintf(
     url,
     sizeof(url),
-    "https://your-project-id.supabase.co/rest/v1/machines?id=eq.%s&select=is_operational",
+    "https://pgdtypgzzdchqefcgcaz.supabase.co/rest/v1/machines?id=eq.%llu&select=operational",
     ESP.getEfuseMac()
   );
   Serial.println(url);
@@ -239,7 +239,9 @@ bool DBIsOperational() {
 
   String body = http.getString();
   http.end();
-  Serial.println(body);
+  
+  if (body.indexOf("true") != -1) return true;
+  else return false;
 }
 
 void waitForFix(){
@@ -259,6 +261,7 @@ void waitForFix(){
   }
 
   Serial.println("Issue fixed");
+  LEDstatus(ledState::OPERATIONAL);
 }
 
 void reclaimPins() {
