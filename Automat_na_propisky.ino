@@ -34,23 +34,20 @@ ESP32QRCodeReader reader(CAMERA_MODEL_AI_THINKER);
 
 const char* url_process = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/process_transaction";
 const char* url_finish = "https://pgdtypgzzdchqefcgcaz.supabase.co/functions/v1/finish_transaction";
-const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc"; //should be anon key
+const char* supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZHR5cGd6emRjaHFlZmNnY2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1MjAxNzEsImV4cCI6MjA3NDA5NjE3MX0.a0VHx01HJRa6G3MGTzR3pLHRjNr1cUiaiENOwWicizc";  //should be anon key
 
 //new credentials
 bool connectWiFi(String ssid, String password) {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
+
   int timeout = 60000;
 
   while (WiFi.status() != WL_CONNECTED) {
-    if (timeout > 0)
-    {
+    if (timeout > 0) {
       timeout -= 500;
       delay(500);
-    }
-    else
-    {
+    } else {
       return false;
     }
   }
@@ -65,98 +62,94 @@ bool connectWiFi(String ssid, String password) {
 //saved credentials
 bool connectWiFi() {
   Preferences preferences;
-  preferences.begin("WiFiCredentials", true); 
+  preferences.begin("WiFiCredentials", true);
 
   String ssid = preferences.getString("ssid", "");
   String password = preferences.getString("password", "");
-  
-  if (ssid == "" && password == "")
-  {
+
+  if (ssid == "" && password == "") {
     return false;
   }
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
-  int timeout = 60000;
+
+  int timeout = 10000;
 
   while (WiFi.status() != WL_CONNECTED) {
-    if (timeout > 0)
-    {
+    if (timeout > 0) {
       timeout -= 500;
       delay(500);
-    }
-    else
-    {
+    } else {
       return false;
     }
   }
-  
+
   return true;
 }
 
 void stepperMove() {
   //step 1
-  digitalWrite(STEPPER_A, HIGH); 
-  digitalWrite(STEPPER_B, LOW); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_A, HIGH);
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, LOW);
   delay(1);
 
   //step 2
-  digitalWrite(STEPPER_A, HIGH); 
-  digitalWrite(STEPPER_B, HIGH); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_A, HIGH);
+  digitalWrite(STEPPER_B, HIGH);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, LOW);
   delay(1);
 
   //step 3
-  digitalWrite(STEPPER_A, LOW); 
-  digitalWrite(STEPPER_B, HIGH); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_A, LOW);
+  digitalWrite(STEPPER_B, HIGH);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, LOW);
   delay(1);
 
   //step 4
-  digitalWrite(STEPPER_A, LOW); 
-  digitalWrite(STEPPER_B, HIGH); 
-  digitalWrite(STEPPER_C, HIGH); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_A, LOW);
+  digitalWrite(STEPPER_B, HIGH);
+  digitalWrite(STEPPER_C, HIGH);
+  digitalWrite(STEPPER_D, LOW);
   delay(1);
 
   //step 5
-  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_A, LOW);
   digitalWrite(STEPPER_B, LOW);
-  digitalWrite(STEPPER_C, HIGH); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_C, HIGH);
+  digitalWrite(STEPPER_D, LOW);
   delay(1);
 
   //step 6
-  digitalWrite(STEPPER_A, LOW); 
+  digitalWrite(STEPPER_A, LOW);
   digitalWrite(STEPPER_B, LOW);
   digitalWrite(STEPPER_C, HIGH);
-  digitalWrite(STEPPER_D, HIGH); 
+  digitalWrite(STEPPER_D, HIGH);
   delay(1);
 
   //step 7
-  digitalWrite(STEPPER_A, LOW); 
-  digitalWrite(STEPPER_B, LOW); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, HIGH); 
+  digitalWrite(STEPPER_A, LOW);
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, HIGH);
   delay(1);
 
   //step 8
-  digitalWrite(STEPPER_A, HIGH); 
-  digitalWrite(STEPPER_B, LOW); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, HIGH); 
+  digitalWrite(STEPPER_A, HIGH);
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, HIGH);
   delay(1);
 
   //coils off
-  digitalWrite(STEPPER_A, LOW); 
-  digitalWrite(STEPPER_B, LOW); 
-  digitalWrite(STEPPER_C, LOW); 
-  digitalWrite(STEPPER_D, LOW); 
+  digitalWrite(STEPPER_A, LOW);
+  digitalWrite(STEPPER_B, LOW);
+  digitalWrite(STEPPER_C, LOW);
+  digitalWrite(STEPPER_D, LOW);
 }
 
 bool dispense() {
@@ -164,13 +157,11 @@ bool dispense() {
 
   unsigned long timeout = millis() + 10000;
 
-  while (millis() < timeout)
-  {
+  while (millis() < timeout) {
     stepperMove();
-    
+
     Serial.println(analogRead(IR));
-    if (analogRead(IR) < IR_THRESHOLD)
-    {
+    if (analogRead(IR) < IR_THRESHOLD) {
       return true;
     }
   }
@@ -187,8 +178,7 @@ bool DBProcessTransaction(char* uid, char* temporary_key, char* transaction_id) 
   http.addHeader("Authorization", String("Bearer ") + supabaseKey);
   int httpResponseCode = http.POST(jsonBody);
 
-  if (httpResponseCode != 200)
-  {
+  if (httpResponseCode != 200) {
     Serial.print("HTTP error: ");
     Serial.println(httpResponseCode);
     http.end();
@@ -224,8 +214,7 @@ bool DBIsOperational() {
     url,
     sizeof(url),
     "https://pgdtypgzzdchqefcgcaz.supabase.co/rest/v1/machines?id=eq.%llu&select=operational",
-    ESP.getEfuseMac()
-  );
+    ESP.getEfuseMac());
   Serial.println(url);
 
   HTTPClient http;
@@ -238,25 +227,23 @@ bool DBIsOperational() {
 
   String body = http.getString();
   http.end();
-  
+
   if (body.indexOf("true") != -1) return true;
   else return false;
 }
 
-void waitForFix(){
+void waitForFix() {
   LEDstatus(ledState::ERROR);
 
-  while(true) 
-  { 
-    for (int interval = 0; interval < 20000; interval += 1000)
-    {
+  while (true) {
+    for (int interval = 0; interval < 20000; interval += 1000) {
       digitalWrite(33, LOW);
       delay(500);
       digitalWrite(33, HIGH);
       delay(500);
     }
 
-    if(DBIsOperational()) break;
+    if (DBIsOperational()) break;
   }
 
   Serial.println("Issue fixed");
@@ -278,14 +265,12 @@ void reclaimPins() {
 void scanQR(char* param1, char* param2) {
   reader.begin();
 
-  while (true) 
-  {
+  while (true) {
     LEDstatus(OPERATIONAL);
     Serial.print(".");
 
     struct QRCodeData qrCodeData;
-    if (reader.receiveQrCode(&qrCodeData, SCAN_INTERVAL) && qrCodeData.valid) 
-    {
+    if (reader.receiveQrCode(&qrCodeData, SCAN_INTERVAL) && qrCodeData.valid) {
       // display success to user
       analogWrite(FLASH, 20);
       delay(200);
@@ -294,25 +279,19 @@ void scanQR(char* param1, char* param2) {
       char* payload = (char*)qrCodeData.payload;
       char* pch = strtok(payload, "/");
 
-      if (pch != NULL)
-      {
+      if (pch != NULL) {
         snprintf(param1, 64, pch);
         pch = strtok(NULL, "/");
         Serial.println();
         Serial.println("param1 acquired");
-      }
-      else 
-      {
+      } else {
         Serial.println("Invalid QR data");
       }
 
-      if (pch != NULL)
-      {
+      if (pch != NULL) {
         snprintf(param2, 64, pch);
         Serial.println("param2 acquired");
-      }
-      else 
-      {
+      } else {
         Serial.println("Invalid QR data");
       }
 
@@ -325,8 +304,7 @@ void scanQR(char* param1, char* param2) {
 }
 
 void LEDstatus(enum ledState s) {
-  switch(s)
-  {
+  switch (s) {
     case OPERATIONAL:
       LED.SetPixelColor(0, RgbColor(0, 0, 255));
       break;
@@ -347,7 +325,7 @@ void LEDstatus(enum ledState s) {
       LED.SetPixelColor(0, RgbColor(0, 0, 0));
       break;
   }
-  
+
   LED.Show();
 }
 
@@ -367,23 +345,19 @@ void setup() {
 
   reader.setup();
 
-  if (connectWiFi())
-  {
+  if (connectWiFi()) {
     //Credentials are stored
     Serial.println("WiFi connected");
     LEDstatus(ledState::OPERATIONAL);
-  }
-  else //Credentials missing or incorrect, acquire now
+  } else  //Credentials missing or incorrect, acquire now
   {
-    for (int i = 0; i < MAX_QR_RETRIES; i++)
-    {
-      Serial.println("Scanning for WiFi credentials...");    
+    for (int i = 0; i < MAX_QR_RETRIES; i++) {
+      Serial.print("Scanning for WiFi credentials");
       char ssid[64];
       char password[64];
       scanQR(ssid, password);
 
-      if (connectWiFi(ssid, password))
-      {
+      if (connectWiFi(ssid, password)) {
         Serial.println("WiFi connected");
         LEDstatus(ledState::OPERATIONAL);
         return;
@@ -391,11 +365,12 @@ void setup() {
 
       LEDstatus(ledState::ERROR);
 
-      while(true);
+      while (true)
+        ;
     }
   }
 
-  if(!DBIsOperational()) waitForFix();
+  if (!DBIsOperational()) waitForFix();
 }
 
 void loop() {
@@ -409,8 +384,7 @@ void loop() {
 
   char transaction_id[64];
   bool infoOK = DBProcessTransaction(uid, temporary_key, transaction_id);
-  if(!infoOK)
-  {
+  if (!infoOK) {
     LEDstatus(ledState::ERROR);
     return;
   }
@@ -420,22 +394,18 @@ void loop() {
   WiFi.mode(WIFI_OFF);
 
   bool dispenseOK = dispense();
-  if(connectWiFi()) Serial.println("Reconnect successful");
+  if (connectWiFi()) Serial.println("Reconnect successful");
 
   bool proceed;
 
-  if(!dispenseOK)
-  {
-    proceed = DBFinishTransaction(transaction_id, "false"); // Should always return false
+  if (!dispenseOK) {
+    proceed = DBFinishTransaction(transaction_id, "false");  // Should always return false
     LEDstatus(ledState::ERROR);
-  }
-  else
-  {
-    proceed = DBFinishTransaction(transaction_id, "true"); // Returns false if inventory runs out or machine manually set to inoperational
+  } else {
+    proceed = DBFinishTransaction(transaction_id, "true");  // Returns false if inventory runs out or machine manually set to inoperational
   }
 
-  if (!proceed)
-  {
+  if (!proceed) {
     waitForFix();
   }
 }
